@@ -12,6 +12,10 @@ import logging
 import argparse
 from datetime import datetime
 import google.generativeai as genai
+from prompts import (
+    CHAIN_OF_DENSITY_YOUTUBE_PROMPT,
+    INFORMATION_EXTRACTION_YOUTUBE_PROMPT
+)
 
 # Configure logging
 logging.basicConfig(
@@ -80,37 +84,10 @@ def apply_chain_of_density(initial_summary, api_key, youtube_url):
     model = genai.GenerativeModel('gemini-2.5-pro-preview-03-25')
     
     # Chain of Density prompt
-    cod_prompt = f"""
-    I want you to help me create a more detailed and information-dense summary of a YouTube video about CUDA or Triton kernels.
-    
-    Here is the initial summary:
-    {initial_summary}
-    
-    Video URL: {youtube_url}
-    
-    Using the Chain of Density method, please:
-    
-    1. Identify specific entities, concepts, techniques, code examples, and performance tips from the video
-    2. Create a more detailed summary that includes:
-       - Key technical concepts explained in the video
-       - Specific code examples or patterns mentioned
-       - Performance optimization techniques
-       - Common pitfalls or "gotchas" when writing CUDA/Triton kernels
-       - Mathematical equations or algorithms discussed
-       - Benchmark results or performance comparisons
-    
-    Focus on extracting high-signal, technical information that would be valuable for someone learning to write CUDA or Triton kernels.
-    
-    Format the output as a well-structured report with sections for:
-    - Overview
-    - Key Concepts
-    - Code Examples (with full code when available)
-    - Performance Optimization Techniques
-    - Common Pitfalls
-    - Additional Resources
-    
-    Use markdown formatting for better readability.
-    """
+    cod_prompt = CHAIN_OF_DENSITY_YOUTUBE_PROMPT.format(
+        initial_summary=initial_summary,
+        youtube_url=youtube_url
+    )
     
     try:
         logger.info("Generating refined summary...")
@@ -146,25 +123,9 @@ def extract_specific_information(refined_summary, api_key):
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-2.5-pro-preview-03-25')
     
-    extraction_prompt = f"""
-    I have a refined summary of a YouTube video about CUDA or Triton kernels:
-    
-    {refined_summary}
-    
-    Please extract and organize the following specific types of information:
-    
-    1. Code Examples: Extract any complete code examples, ensuring they are properly formatted and include all necessary context
-    
-    2. Performance Optimization Techniques: List specific techniques mentioned for optimizing CUDA or Triton kernels
-    
-    3. Mathematical Equations: Extract any mathematical equations or algorithms discussed
-    
-    4. Common Pitfalls: Identify common mistakes or "gotchas" when writing CUDA or Triton kernels
-    
-    5. Benchmark Results: Extract any specific performance numbers or comparisons
-    
-    Format the output as a well-structured markdown report with clear sections and code blocks where appropriate.
-    """
+    extraction_prompt = INFORMATION_EXTRACTION_YOUTUBE_PROMPT.format(
+        refined_summary=refined_summary
+    )
     
     try:
         logger.info("Generating specific information extraction...")

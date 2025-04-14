@@ -8,6 +8,13 @@ such as code examples, equations, key steps, and gotchas.
 import logging
 from typing import Dict, List, Any
 from google import genai
+from prompts import (
+    CODE_EXAMPLES_EXTRACTION_PROMPT,
+    EQUATIONS_EXTRACTION_PROMPT,
+    STEPS_EXTRACTION_PROMPT,
+    GOTCHAS_EXTRACTION_PROMPT,
+    PERFORMANCE_TIPS_EXTRACTION_PROMPT
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -40,21 +47,7 @@ class InformationExtractor:
         """
         logger.info("Extracting code examples")
         
-        prompt = f"""
-        Extract all code examples related to CUDA or Triton kernels from the following content.
-        Include the full code and a brief description of what each example demonstrates.
-        
-        Content:
-        {content}
-        
-        For each code example, provide:
-        1. The complete code snippet
-        2. A description of what the code demonstrates
-        3. Any key points or optimizations shown in the code
-        
-        Format your response as a list of examples, with each example clearly separated.
-        Ensure that code formatting is preserved with proper indentation.
-        """
+        prompt = CODE_EXAMPLES_EXTRACTION_PROMPT.format(content=content)
         
         try:
             response = self.client.models.generate_content(
@@ -63,8 +56,8 @@ class InformationExtractor:
             )
             
             # In a real implementation, we would parse the response into structured data
-            # For simplicity, we'll return the raw response for now
-            return [{"raw_extraction": response.text}]
+            # For simplicity, we'll just return the raw text
+            return [{"raw_examples": response.text}]
         except Exception as e:
             logger.error(f"Error extracting code examples: {str(e)}")
             return []
@@ -81,20 +74,7 @@ class InformationExtractor:
         """
         logger.info("Extracting equations")
         
-        prompt = f"""
-        Extract all mathematical equations or formulas related to CUDA or Triton kernels from the following content.
-        Include a clear explanation of each equation and its relevance.
-        
-        Content:
-        {content}
-        
-        For each equation, provide:
-        1. The equation itself (in a clear format)
-        2. An explanation of what the equation represents
-        3. How this equation is relevant to CUDA or Triton kernel programming
-        
-        Format your response as a list of equations, with each equation clearly separated.
-        """
+        prompt = EQUATIONS_EXTRACTION_PROMPT.format(content=content)
         
         try:
             response = self.client.models.generate_content(
@@ -102,7 +82,9 @@ class InformationExtractor:
                 contents=prompt
             )
             
-            return [{"raw_extraction": response.text}]
+            # In a real implementation, we would parse the response into structured data
+            # For simplicity, we'll just return the raw text
+            return [{"raw_equations": response.text}]
         except Exception as e:
             logger.error(f"Error extracting equations: {str(e)}")
             return []
@@ -115,25 +97,11 @@ class InformationExtractor:
             content: The content to extract from
             
         Returns:
-            List of dictionaries containing key steps with explanations
+            List of dictionaries containing steps with explanations
         """
         logger.info("Extracting key steps")
         
-        prompt = f"""
-        Extract the key steps or processes for writing effective CUDA or Triton kernels from the following content.
-        Focus on practical, actionable steps that developers should follow.
-        
-        Content:
-        {content}
-        
-        For each key step or process, provide:
-        1. A clear title or name for the step
-        2. A detailed explanation of what this step involves
-        3. Why this step is important
-        4. Any tips or best practices related to this step
-        
-        Format your response as a numbered list of steps, with each step clearly separated.
-        """
+        prompt = STEPS_EXTRACTION_PROMPT.format(content=content)
         
         try:
             response = self.client.models.generate_content(
@@ -141,7 +109,9 @@ class InformationExtractor:
                 contents=prompt
             )
             
-            return [{"raw_extraction": response.text}]
+            # In a real implementation, we would parse the response into structured data
+            # For simplicity, we'll just return the raw text
+            return [{"raw_steps": response.text}]
         except Exception as e:
             logger.error(f"Error extracting key steps: {str(e)}")
             return []
@@ -156,24 +126,9 @@ class InformationExtractor:
         Returns:
             List of dictionaries containing gotchas with explanations
         """
-        logger.info("Extracting gotchas and warnings")
+        logger.info("Extracting gotchas")
         
-        prompt = f"""
-        Extract all gotchas, warnings, and common pitfalls related to CUDA or Triton kernel programming from the following content.
-        Focus on issues that developers commonly encounter and how to avoid them.
-        
-        Content:
-        {content}
-        
-        For each gotcha or warning, provide:
-        1. A clear title that describes the issue
-        2. A detailed explanation of the problem
-        3. Why this is a common issue or mistake
-        4. How to avoid or solve this problem
-        5. Any specific examples mentioned
-        
-        Format your response as a list of gotchas, with each gotcha clearly separated.
-        """
+        prompt = GOTCHAS_EXTRACTION_PROMPT.format(content=content)
         
         try:
             response = self.client.models.generate_content(
@@ -181,7 +136,9 @@ class InformationExtractor:
                 contents=prompt
             )
             
-            return [{"raw_extraction": response.text}]
+            # In a real implementation, we would parse the response into structured data
+            # For simplicity, we'll just return the raw text
+            return [{"raw_gotchas": response.text}]
         except Exception as e:
             logger.error(f"Error extracting gotchas: {str(e)}")
             return []
@@ -196,24 +153,9 @@ class InformationExtractor:
         Returns:
             List of dictionaries containing performance tips with explanations
         """
-        logger.info("Extracting performance optimization tips")
+        logger.info("Extracting performance tips")
         
-        prompt = f"""
-        Extract all performance optimization tips and techniques for CUDA or Triton kernels from the following content.
-        Focus on specific, actionable advice that can improve kernel performance.
-        
-        Content:
-        {content}
-        
-        For each performance tip, provide:
-        1. A clear title for the optimization technique
-        2. A detailed explanation of the technique
-        3. When and why this technique is effective
-        4. Any benchmarks or performance improvements mentioned
-        5. Any trade-offs or considerations to keep in mind
-        
-        Format your response as a list of performance tips, with each tip clearly separated.
-        """
+        prompt = PERFORMANCE_TIPS_EXTRACTION_PROMPT.format(content=content)
         
         try:
             response = self.client.models.generate_content(
@@ -221,7 +163,9 @@ class InformationExtractor:
                 contents=prompt
             )
             
-            return [{"raw_extraction": response.text}]
+            # In a real implementation, we would parse the response into structured data
+            # For simplicity, we'll just return the raw text
+            return [{"raw_tips": response.text}]
         except Exception as e:
             logger.error(f"Error extracting performance tips: {str(e)}")
             return []
@@ -236,7 +180,7 @@ class InformationExtractor:
         Returns:
             Dictionary containing all extracted information
         """
-        logger.info("Extracting all information types")
+        logger.info("Extracting all information")
         
         return {
             "code_examples": self.extract_code_examples(content),

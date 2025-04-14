@@ -7,8 +7,17 @@ while maintaining the same length.
 """
 
 import logging
+import json
+import re
 from typing import Dict, List, Optional, Any
 from google import genai
+from prompts import (
+    INITIAL_SUMMARY_PROMPT,
+    ENTITY_IDENTIFICATION_PROMPT,
+    SUMMARY_REWRITE_PROMPT,
+    ENTITY_DENSITY_EVALUATION_PROMPT,
+    SUMMARY_QUALITY_EVALUATION_PROMPT
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -41,15 +50,7 @@ class ChainOfDensity:
         """
         logger.info("Generating initial summary")
         
-        prompt = f"""
-        Create an initial summary of the following content. The summary should be:
-        - About 150-200 words in length
-        - Capture the main points but be somewhat verbose
-        - Use filler phrases like "this content discusses" where appropriate
-        
-        Content to summarize:
-        {content}
-        """
+        prompt = INITIAL_SUMMARY_PROMPT.format(content=content)
         
         try:
             response = self.client.models.generate_content(
@@ -77,24 +78,10 @@ class ChainOfDensity:
         """
         logger.info("Identifying missing entities")
         
-        prompt = f"""
-        Identify 3-5 important entities from the original content that are missing from the current summary.
-        
-        An entity is a specific, concrete piece of information such as:
-        - Technical terms related to CUDA or Triton kernels
-        - Specific code patterns or techniques
-        - Performance numbers or benchmarks
-        - Names of specific algorithms or optimization strategies
-        - Specific hardware details or requirements
-        
-        Original content:
-        {content}
-        
-        Current summary:
-        {current_summary}
-        
-        Return only a list of the missing entities, one per line, with no additional text.
-        """
+        prompt = ENTITY_IDENTIFICATION_PROMPT.format(
+            content=content,
+            current_summary=current_summary
+        )
         
         try:
             response = self.client.models.generate_content(
@@ -126,25 +113,12 @@ class ChainOfDensity:
         
         entities_text = "\n".join([f"- {entity}" for entity in missing_entities])
         
-        prompt = f"""
-        Rewrite the current summary to include the missing entities while maintaining approximately the same length.
-        
-        Guidelines:
-        - The new summary should be about the same length as the current summary (approximately {len(current_summary.split())} words)
-        - Include all the missing entities
-        - Make the summary more concise by removing filler phrases and redundant information
-        - Maintain the key information from the current summary
-        - Focus on technical details and practical insights about CUDA and Triton kernels
-        
-        Original content:
-        {content}
-        
-        Current summary:
-        {current_summary}
-        
-        Missing entities to include:
-        {entities_text}
-        """
+        prompt = SUMMARY_REWRITE_PROMPT.format(
+            content=content,
+            current_summary=current_summary,
+            entities_text=entities_text,
+            len_current_summary=len(current_summary.split())
+        )
         
         try:
             response = self.client.models.generate_content(
@@ -171,25 +145,7 @@ class ChainOfDensity:
         """
         logger.info("Evaluating entity density")
         
-        prompt = f"""
-        Evaluate the entity density of the following summary. Count the number of specific, concrete entities related to CUDA and Triton kernels.
-        
-        An entity is a specific, concrete piece of information such as:
-        - Technical terms related to CUDA or Triton kernels
-        - Specific code patterns or techniques
-        - Performance numbers or benchmarks
-        - Names of specific algorithms or optimization strategies
-        - Specific hardware details or requirements
-        
-        Summary:
-        {summary}
-        
-        Return a JSON object with the following fields:
-        - entity_count: The number of entities found
-        - word_count: The number of words in the summary
-        - entity_density: The ratio of entities to words
-        - entities_found: A list of the entities found
-        """
+        prompt = ENTITY_DENSITY_EVALUATION_PROMPT.format(summary=summary)
         
         try:
             response = self.client.models.generate_content(
@@ -257,23 +213,10 @@ class ChainOfDensity:
         """
         logger.info("Judging entity extraction quality")
         
-        prompt = f"""
-        Act as a judge to evaluate how well the summary extracts important entities from the original content.
-        Focus specifically on technical details related to CUDA and Triton kernels.
-        
-        Original content:
-        {content}
-        
-        Summary:
-        {summary}
-        
-        Provide your evaluation as a JSON object with the following fields:
-        - entity_coverage: A score from 1-10 indicating how well the summary covers important entities
-        - missing_key_entities: List of important entities that are missing from the summary
-        - irrelevant_entities: List of entities in the summary that aren't important
-        - overall_quality: A score from 1-10 indicating the overall quality of the summary
-        - suggestions: Suggestions for improving the summary
-        """
+        prompt = SUMMARY_QUALITY_EVALUATION_PROMPT.format(
+            content=content,
+            summary=summary
+        )
         
         try:
             response = self.client.models.generate_content(

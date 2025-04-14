@@ -8,6 +8,10 @@ It handles the direct video URL input to Gemini for processing.
 import logging
 from typing import Dict, Optional, Any
 from google import genai
+from prompts import (
+    BASIC_VIDEO_SUMMARY_PROMPT,
+    DETAILED_VIDEO_ANALYSIS_PROMPT
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -41,8 +45,8 @@ class GeminiVideoProcessor:
         logger.info(f"Processing video: {video_url}")
         
         try:
-            # Create a basic prompt to summarize the video
-            prompt = "Can you summarize this video?"
+            # Use the basic prompt to summarize the video
+            prompt = BASIC_VIDEO_SUMMARY_PROMPT
             
             # Call the Gemini API with the video URL
             response = self.client.models.generate_content(
@@ -79,20 +83,8 @@ class GeminiVideoProcessor:
         logger.info(f"Extracting detailed content from video: {video_url}")
         
         try:
-            # Create a detailed prompt to extract specific information
-            prompt = """
-            Please analyze this YouTube video about CUDA or Triton kernels and extract the following information:
-            
-            1. A comprehensive summary of the key points
-            2. Any code examples shown or discussed
-            3. Mathematical equations or formulas presented
-            4. Step-by-step processes explained
-            5. Common pitfalls or gotchas mentioned
-            6. Performance optimization techniques discussed
-            
-            For each section, provide detailed information with specific examples from the video.
-            Focus on technical details that would be valuable for someone learning to write CUDA or Triton kernels.
-            """
+            # Use the detailed prompt to extract specific information
+            prompt = DETAILED_VIDEO_ANALYSIS_PROMPT
             
             # Call the Gemini API with the video URL
             response = self.client.models.generate_content(
