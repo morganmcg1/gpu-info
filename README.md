@@ -163,6 +163,16 @@ Test direct YouTube video processing with the Gemini API:
 python gpu_info/tests/test_gemini_video.py
 ```
 
+#### Test Code Structure
+
+Verify the code structure and imports:
+
+```
+./test_structure.py
+```
+
+This script checks that all modules can be imported correctly and that the directory structure is as expected.
+
 
 
 ## Output
@@ -211,10 +221,11 @@ The system generates two types of output files for each processed video:
   - `main.py`: Main script for processing videos
   - `batch_process_videos.py`: Script for processing multiple videos
   - `youtube_summary_extractor.py`: Standalone script for YouTube video processing
-  - `test_scripts/`: Test scripts
-    - `test_cuda_video.py`: Test script for processing the default CUDA video
-    - `test_llm_client.py`: Test script for the LLM client
-    - `test_gemini_video.py`: Test script for direct Gemini API video processing
+- `test_structure.py`: Script to verify code structure and imports
+- `gpu_info/tests/`: Test scripts
+  - `test_cuda_video.py`: Test script for processing the default CUDA video
+  - `test_llm_client.py`: Test script for the LLM client
+  - `test_gemini_video.py`: Test script for direct Gemini API video processing
 
 ## Prompt Engineering
 
