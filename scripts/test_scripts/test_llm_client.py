@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Import the LLMClient
 from gpu_info.core.llm_client import LLMClient, get_llm_client
-from gpu_info.models.models import CodeExample, Equation, Gotcha, OptimizationTip, VideoAnalysis
+from gpu_info.models.models import CodeExample, Equation, Gotcha, PerformanceTip as OptimizationTip, VideoAnalysis
 
 def get_test_video_url():
     """Get the test video URL from the config file."""
