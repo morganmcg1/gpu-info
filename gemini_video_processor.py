@@ -60,9 +60,15 @@ class GeminiVideoProcessor:
         for attempt in range(max_retries):
             try:
                 prompt = CONTENT_RELEVANCE_CHECK_PROMPT.format(content=video_url)
-                response = self.client.generate_content(
+                response = self.client.models.generate_content(
                     model=self.model_id,
-                    contents=prompt
+                    contents=[
+                        {
+                            "parts": [
+                                {"text": prompt}
+                            ]
+                        }
+                    ]
                 )
                 
                 # Try to parse the JSON response
@@ -177,7 +183,7 @@ class GeminiVideoProcessor:
                 
                 # Call the Gemini API with the video URL
                 # Note: timeout is handled at the client level, not in the API call
-                response = self.client.generate_content(
+                response = self.client.models.generate_content(
                     model=self.model_id,
                     contents=[
                         {
@@ -302,7 +308,7 @@ class GeminiVideoProcessor:
                 
                 # Call the Gemini API with the video URL
                 # Note: timeout is handled at the client level, not in the API call
-                response = self.client.generate_content(
+                response = self.client.models.generate_content(
                     model=self.model_id,
                     contents=[
                         {
