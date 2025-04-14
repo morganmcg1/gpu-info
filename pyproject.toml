@@ -1,0 +1,16 @@
+[project]
+name = "gpu-info-extractor"
+version = "0.1.0"
+description = "Extracts insights from GPU programming YouTube videos using Gemini and Chain of Density."
+requires-python = ">=3.10"
+dependencies = [
+    "google-genai", 
+    "python-dotenv>=1.0.1",
+]
+
+[project.scripts]
+process-video = "src.main:main"
+
+[tool.uv]
+# Optional: Configure uv settings if needed
+# python = "3.12"
