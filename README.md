@@ -2,6 +2,10 @@
 
 This repository contains tools for extracting high-quality information from YouTube videos about CUDA and Triton kernels. It uses the Gemini 2.5 Pro model to analyze videos and extract key learnings, code examples, equations, and best practices.
 
+## Overview
+
+This project aims to create a high-quality knowledge base from YouTube videos about CUDA and Triton kernel programming. It uses the Gemini API and the Chain of Density method to extract detailed, high-signal information from educational content.
+
 ## Features
 
 - Process YouTube videos directly using the Gemini API
@@ -77,6 +81,17 @@ The system generates two types of output files for each processed video:
 - `output_formatter.py`: Formats the output into structured reports
 - `gemini_video_processor.py`: Processes videos directly with the Gemini API
 - `main.py`: The main script that ties everything together
+
+## Example Summaries
+
+The repository includes example summaries that demonstrate the level of detail and structure we aim to achieve:
+
+1. [Triton Kernel Basics](summaries/triton_kernel_basics.md)
+2. [CUDA Optimization Techniques](summaries/cuda_optimization_techniques.md)
+
+## Limitations
+
+There are some limitations with directly processing YouTube videos using the Gemini API. See [README_LIMITATIONS.md](README_LIMITATIONS.md) for details and workarounds.
 
 ## License
 
