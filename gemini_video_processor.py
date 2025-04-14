@@ -54,7 +54,8 @@ class GeminiVideoProcessor:
             
         logger.info(f"Checking content relevance for video: {video_url}")
         
-        model = self.client.get_model(self.model_id)
+        # Use the models property instead of get_model
+        model = self.client.models[self.model_id]
         
         for attempt in range(max_retries):
             try:
