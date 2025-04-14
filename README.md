@@ -18,6 +18,8 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
   - Performance optimization techniques
 - Generate well-structured Markdown reports
 - Process multiple videos in parallel for improved efficiency
+- Centralized configuration system for easy customization
+- Robust logging with colored console output
 
 ## Installation
 
@@ -37,6 +39,18 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 3. Set up your Google API key:
    ```
    export GOOGLE_API_KEY="your_api_key_here"
+   ```
+
+4. (Optional) Configure additional settings via environment variables:
+   ```
+   # Example: Set maximum parallel workers
+   export GPU_INFO_MAX_WORKERS=5
+   
+   # Example: Set output directory
+   export GPU_INFO_OUTPUT_DIR="./my_summaries"
+   
+   # Example: Set logging level
+   export GPU_INFO_LOG_LEVEL="DEBUG"
    ```
 
 
@@ -65,6 +79,9 @@ Where:
 - `video_list.txt` contains one YouTube URL per line
 - `--max_workers` controls the number of videos processed in parallel (default: 3)
 - `--model_id` can be used to specify a different Gemini model (default: gemini-2.5-pro-preview-03-25)
+- `--log_level` sets the logging level (DEBUG, INFO, WARNING, ERROR)
+- `--force_reprocess` forces reprocessing of already processed videos
+- `--api_key` can be used to provide a Google API key directly
 
 ### Specify an output directory
 
@@ -115,6 +132,8 @@ The system generates two types of output files for each processed video:
 - `batch_process_videos.py`: Script for processing multiple YouTube videos in batch
 - `parallel_processor.py`: Handles parallel processing of multiple videos
 - `prompts.py`: Contains all prompts used throughout the system
+- `config.py`: Centralized configuration system
+- `logger.py`: Enhanced logging functionality
 
 
 
@@ -124,6 +143,69 @@ The repository includes example summaries that demonstrate the level of detail a
 
 1. [Triton Kernel Basics](summaries/triton_kernel_basics.md)
 2. [CUDA Optimization Techniques](summaries/cuda_optimization_techniques.md)
+
+## Configuration
+
+The system uses a centralized configuration system that can be customized in several ways:
+
+### Environment Variables
+
+You can configure the system using environment variables with the prefix `GPU_INFO_`:
+
+```bash
+# API Settings
+export GPU_INFO_GEMINI_MODEL_ID="gemini-2.5-pro-preview-03-25"
+export GPU_INFO_GEMINI_API_KEY="your_api_key_here"  # Alternative to GOOGLE_API_KEY
+
+# Processing Settings
+export GPU_INFO_MAX_WORKERS=3
+export GPU_INFO_TIMEOUT=300
+export GPU_INFO_MAX_RETRIES=3
+export GPU_INFO_RETRY_DELAY=2
+export GPU_INFO_FORCE_REPROCESS=false
+
+# Output Settings
+export GPU_INFO_OUTPUT_DIR="./summaries"
+export GPU_INFO_CACHE_DIR="./cache"
+
+# Logging Settings
+export GPU_INFO_LOG_LEVEL="INFO"  # DEBUG, INFO, WARNING, ERROR
+export GPU_INFO_LOG_FORMAT="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+export GPU_INFO_LOG_FILE="gpu_info.log"
+
+# Chain of Density Settings
+export GPU_INFO_COD_ITERATIONS=3
+```
+
+### Command Line Arguments
+
+Most scripts accept command line arguments that override the configuration:
+
+```bash
+python batch_process_videos.py \
+  --video_list "video_list.txt" \
+  --output_dir "summaries" \
+  --max_workers 3 \
+  --model_id "gemini-2.5-pro-preview-03-25" \
+  --log_level "INFO" \
+  --force_reprocess
+```
+
+### Programmatic Configuration
+
+You can also modify the configuration programmatically:
+
+```python
+from config import Config
+
+# Get configuration values
+model_id = Config.get("GEMINI_MODEL_ID")
+max_workers = Config.get("MAX_WORKERS")
+
+# Set configuration values
+Config.set("MAX_WORKERS", 5)
+Config.set("LOG_LEVEL", "DEBUG")
+```
 
 ## Limitations
 
