@@ -10,16 +10,18 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 
 - Process YouTube videos directly using the Gemini API
 - Apply the Chain of Density method to create high-quality summaries
-- Extract specific types of information:
-  - Code examples with explanations
-  - Mathematical equations and formulas
-  - Step-by-step processes
-  - Common gotchas and warnings
-  - Performance optimization techniques
+- Extract specific types of technical information:
+  - Complete, executable code examples with proper syntax and optimization notes
+  - Mathematical equations and algorithms with precise definitions and implementation relevance
+  - Step-by-step implementation techniques with exact parameter values and hardware considerations
+  - Specific technical pitfalls with root causes and concrete solutions
+  - Performance optimization techniques with measurable impacts and hardware mechanisms
+  - GPU architecture details directly relevant to kernel writing
 - Generate well-structured Markdown reports
 - Process multiple videos in parallel for improved efficiency
 - Centralized configuration system for easy customization
 - Robust logging with colored console output
+- Intelligent content filtering (identifies non-relevant videos)
 
 ## Installation
 
@@ -134,6 +136,41 @@ The system generates two types of output files for each processed video:
 - `prompts.py`: Contains all prompts used throughout the system
 - `config.py`: Centralized configuration system
 - `logger.py`: Enhanced logging functionality
+
+## Prompt Engineering
+
+The system uses carefully crafted prompts to extract high-quality technical information:
+
+### Basic Video Summary
+Initial prompt focuses on extracting technical concepts related to CUDA/Triton kernels and GPU architecture, while filtering out non-relevant content.
+
+### Detailed Analysis
+Secondary prompt extracts specific technical details:
+- Named functions, classes, and methods with exact parameters
+- Complete code snippets with proper syntax and optimization notes
+- Mathematical formulas explaining kernel behavior
+- Implementation techniques with exact parameter values
+- Performance metrics with precise numbers
+- Common pitfalls and their solutions
+- GPU architecture insights relevant to kernel writing
+
+### Chain of Density
+Iterative refinement process that:
+- Identifies missing technical entities
+- Rewrites summaries to include these entities
+- Evaluates technical density and specificity
+- Produces increasingly detailed and precise summaries
+
+### Information Extraction
+Specialized prompts for extracting:
+- Code examples with exact syntax and optimization techniques
+- Mathematical equations with variable definitions and implementation relevance
+- Implementation steps with specific parameter values and hardware considerations
+- Technical pitfalls with root causes and specific solutions
+- Performance optimization techniques with measurable impacts
+
+### Content Filtering
+The system intelligently identifies videos that don't contain relevant CUDA/Triton kernel information and provides clear explanations of what the video actually covers instead. This prevents irrelevant content from being included in the knowledge base.
 
 
 
