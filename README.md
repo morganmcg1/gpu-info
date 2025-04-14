@@ -20,6 +20,8 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 
 ## Installation
 
+### Standard Installation
+
 1. Clone the repository:
    ```
    git clone https://github.com/morganmcg1/gpu-info.git
@@ -34,6 +36,29 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 3. Set up your Google API key:
    ```
    export GOOGLE_API_KEY="your_api_key_here"
+   ```
+
+### Docker Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/morganmcg1/gpu-info.git
+   cd gpu-info
+   ```
+
+2. Create a `.env` file with your Google API key:
+   ```
+   echo "GOOGLE_API_KEY=your_api_key_here" > .env
+   ```
+
+3. Build and run the Docker containers:
+   ```
+   docker-compose up -d web
+   ```
+
+4. To process videos in batch mode:
+   ```
+   docker-compose up processor
    ```
 
 ## Usage
