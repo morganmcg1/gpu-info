@@ -111,6 +111,38 @@ Example:
 python youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=D7_ipDqhtwk" --output "cuda_profiling_summary.md"
 ```
 
+### Test Scripts
+
+The repository includes several test scripts to verify functionality:
+
+#### Test with Default CUDA Video
+
+Process the default test CUDA video (a short CUDA crash course):
+
+```
+python test_cuda_video.py --method gemini
+```
+
+Options:
+- `--method`: Choose between `gemini` (direct Gemini API), `pipeline` (full processing pipeline), or `both` (default)
+- `--output_dir`: Specify the output directory (default: `test_output`)
+
+#### Test LLM Client
+
+Test the LLM client functionality with structured output:
+
+```
+python test_llm_client.py
+```
+
+#### Test Direct Gemini API
+
+Test direct YouTube video processing with the Gemini API:
+
+```
+python test_gemini_video.py
+```
+
 
 
 ## Output
@@ -142,6 +174,12 @@ The system generates two types of output files for each processed video:
 - `prompts.py`: Contains all prompts used throughout the system
 - `config.py`: Centralized configuration system
 - `logger.py`: Enhanced logging functionality
+- `models.py`: Pydantic models for structured output
+- `llm_client.py`: Centralized LLM client for interacting with the Gemini API
+- `test_cuda_video.py`: Test script for processing the default CUDA video
+- `test_llm_client.py`: Test script for the LLM client
+- `test_gemini_video.py`: Test script for direct Gemini API video processing
+- `config/test_videos.json`: Configuration file with test video URLs
 
 ## Prompt Engineering
 
