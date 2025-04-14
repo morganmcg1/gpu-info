@@ -9,9 +9,9 @@ import logging
 import time
 from typing import Dict, Optional, Any
 
-from llm_client import get_llm_client
-from models import VideoAnalysis
-from prompts import (
+from gpu_info.core.llm_client import get_llm_client
+from gpu_info.models.models import VideoAnalysis
+from gpu_info.utils.prompts import (
     BASIC_VIDEO_SUMMARY_PROMPT,
     DETAILED_VIDEO_ANALYSIS_PROMPT
 )

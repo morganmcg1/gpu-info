@@ -11,9 +11,9 @@ import json
 import re
 from typing import Dict, List, Optional, Any
 
-from llm_client import get_llm_client
-from models import InitialSummary, EntityList, DenseSummary, SummaryEvaluation
-from prompts import (
+from gpu_info.core.llm_client import get_llm_client
+from gpu_info.models.models import InitialSummary, EntityList, DenseSummary, SummaryEvaluation
+from gpu_info.utils.prompts import (
     INITIAL_SUMMARY_PROMPT,
     ENTITY_IDENTIFICATION_PROMPT,
     SUMMARY_REWRITE_PROMPT,

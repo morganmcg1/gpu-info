@@ -8,9 +8,9 @@ such as code examples, equations, key steps, and gotchas.
 import logging
 from typing import Dict, List, Any
 
-from llm_client import get_llm_client
-from models import CodeExample, Equation, ImplementationStep, Gotcha, PerformanceTip, ExtractedInformation
-from prompts import (
+from gpu_info.core.llm_client import get_llm_client
+from gpu_info.models.models import CodeExample, Equation, ImplementationStep, Gotcha, PerformanceTip, ExtractedInformation
+from gpu_info.utils.prompts import (
     CODE_EXAMPLES_EXTRACTION_PROMPT,
     EQUATIONS_EXTRACTION_PROMPT,
     STEPS_EXTRACTION_PROMPT,
