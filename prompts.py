@@ -19,19 +19,16 @@ Evaluate the content based on these criteria:
 3. Does it discuss specific performance optimization techniques for GPU kernels?
 4. Does it provide concrete implementation steps, debugging techniques, or profiling methods for GPU kernels?
 
-Respond with a JSON object containing:
-{
-  "is_relevant": true/false,
-  "relevance_score": 0-10 (where 10 is highly relevant),
-  "contains_cuda_content": true/false,
-  "contains_triton_content": true/false,
-  "primary_topic": "brief description of what the video is actually about",
-  "key_technical_concepts": ["list", "of", "specific", "technical", "concepts", "if", "any"],
-  "explanation": "Brief explanation of why this content is or isn't relevant to CUDA/Triton kernel programming"
-}
+Respond with a JSON object containing these fields:
+- is_relevant: boolean (true/false)
+- relevance_score: number between 0-10 (where 10 is highly relevant)
+- contains_cuda_content: boolean (true/false)
+- contains_triton_content: boolean (true/false)
+- primary_topic: string describing what the video is actually about
+- key_technical_concepts: array of strings listing specific technical concepts if any
+- explanation: string explaining why this content is or isn't relevant to CUDA/Triton kernel programming
 
-If the content is not relevant to CUDA/Triton kernel programming, provide a brief explanation of what the video actually covers instead.
-"""
+Format your response as valid JSON without any additional text before or after."""
 
 # Chain of Density Prompts
 INITIAL_SUMMARY_PROMPT = """

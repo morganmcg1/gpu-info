@@ -74,20 +74,28 @@ class GeminiVideoProcessor:
                 # Try to parse the JSON response
                 try:
                     import json
-                    import re
                     
-                    # Extract JSON from the response
-                    text = response.text
-                    json_match = re.search(r'\{.*\}', text, re.DOTALL)
-                    if json_match:
-                        json_str = json_match.group(0)
-                        relevance_data = json.loads(json_str)
+                    # Get the response text
+                    text = response.text.strip()
+                    
+                    # Try to parse the JSON directly
+                    try:
+                        relevance_data = json.loads(text)
                         logger.info(f"Content relevance check completed for {video_url}")
                         return relevance_data
-                    else:
-                        logger.warning(f"Could not extract JSON from relevance check response")
-                        return {
-                            "is_relevant": False,
+                    except json.JSONDecodeError:
+                        # If direct parsing fails, try to extract JSON using regex
+                        import re
+                        json_match = re.search(r'\{.*\}', text, re.DOTALL)
+                        if json_match:
+                            json_str = json_match.group(0)
+                            relevance_data = json.loads(json_str)
+                            logger.info(f"Content relevance check completed for {video_url}")
+                            return relevance_data
+                        else:
+                            logger.warning(f"Could not extract JSON from relevance check response")
+                            return {
+                                "is_relevant": False,
                             "relevance_score": 0,
                             "contains_cuda_content": False,
                             "contains_triton_content": False,
