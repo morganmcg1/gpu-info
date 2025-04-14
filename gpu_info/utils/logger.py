@@ -9,7 +9,7 @@ import logging
 import sys
 import platform
 from typing import Optional
-from config import Config
+from gpu_info.utils.config import Config
 
 # Initialize colorama for Windows compatibility if available
 try:
