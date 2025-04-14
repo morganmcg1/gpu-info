@@ -1,19 +1,71 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "gpu-info-extractor"
+name = "gpu_info"
 version = "0.1.0"
 description = "Extracts insights from GPU programming YouTube videos using Gemini and Chain of Density."
-requires-python = ">=3.13"
+readme = "README.md"
+authors = [
+    {name = "Morgan McGuire", email = "morganmcg1@gmail.com"},
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.8"
 dependencies = [
-    "google-genai",
-    "python-dotenv>=1.0.1",
+    "google-generativeai>=0.8.4",
     "pytube>=15.0.0",
-    "colorama>=0.4.6", # For colored terminal output on Windows
-    "markdown",
-    "python-dotenv"
+    "argparse>=1.4.0",
+    "colorama>=0.4.6",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "markdown>=3.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
 ]
 
 [project.scripts]
-process-video = "main:main"
+process-video = "scripts.main:main"
+batch-process = "scripts.batch_process_videos:main"
+youtube-summary = "scripts.youtube_summary_extractor:main"
+
+[project.urls]
+"Homepage" = "https://github.com/morganmcg1/gpu-info"
+"Bug Tracker" = "https://github.com/morganmcg1/gpu-info/issues"
+
+[tool.setuptools]
+packages = ["gpu_info", "scripts"]
+
+[tool.setuptools.package-data]
+gpu_info = ["config/*.json"]
+
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
 
 [tool.uv]
-# Settings for uv can be added here if needed in the future
+# Settings for uv package manager
+python = "3.10"
+exclude = ["tests"]

@@ -6,6 +6,8 @@ This repository contains tools for extracting high-quality information from YouT
 
 This project aims to create a high-quality knowledge base from YouTube videos about CUDA and Triton kernel programming. It uses the Gemini API and the Chain of Density method to extract detailed, high-signal information from educational content.
 
+The project has been reorganized with a tidier repository structure and now uses modern Python packaging with `pyproject.toml`. We recommend using `uv` for package management.
+
 ## Features
 
 - Process YouTube videos directly using the Gemini API
@@ -21,11 +23,10 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 - Process multiple videos in parallel for improved efficiency
 - Centralized configuration system for easy customization
 - Robust logging with colored console output
-- Intelligent content filtering (automatically identifies and skips non-CUDA/Triton videos)
+- Modern Python packaging with pyproject.toml
+- Organized package structure for better maintainability
 
 ## Installation
-
-
 
 1. Clone the repository:
    ```
@@ -33,7 +34,18 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
    cd gpu-info
    ```
 
-2. Install the required dependencies:
+2. Install the package using `uv` (recommended):
+   ```
+   uv venv
+   uv pip install -e .
+   ```
+
+   Or using pip:
+   ```
+   pip install -e .
+   ```
+
+   Or just install the dependencies:
    ```
    pip install -r requirements.txt
    ```
@@ -59,22 +71,24 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 
 ## Usage
 
-### Process a single video (Main Script)
+If you installed the package, you can use the provided command-line scripts:
+
+### Process a single video
 
 ```
-python main.py --video_url "https://www.youtube.com/watch?v=example"
+process-video --video_url "https://www.youtube.com/watch?v=example"
 ```
 
 ### Process multiple videos from a list
 
 ```
-python main.py --video_list "video_list.txt"
+process-video --video_list "video_list.txt"
 ```
 
 Or use the dedicated batch processing script with parallel processing:
 
 ```
-python batch_process_videos.py --video_list "video_list.txt" --output_dir "summaries" --max_workers 3
+batch-process --video_list "video_list.txt" --output_dir "summaries" --max_workers 3
 ```
 
 Where:
@@ -85,16 +99,12 @@ Where:
 - `--force_reprocess` forces reprocessing of already processed videos
 - `--api_key` can be used to provide a Google API key directly
 
-The system will automatically:
-1. Check if each video is relevant to CUDA/Triton kernel programming
-2. Skip full processing for non-relevant videos
-3. Create minimal reports for non-relevant videos explaining their actual content
-4. Process relevant videos with the full pipeline
+The system will automatically process all videos with the full pipeline.
 
 ### Specify an output directory
 
 ```
-python main.py --video_url "https://www.youtube.com/watch?v=example" --output_dir "./my_output"
+process-video --video_url "https://www.youtube.com/watch?v=example" --output_dir "./my_output"
 ```
 
 ### Direct YouTube Summary Extractor
@@ -102,13 +112,23 @@ python main.py --video_url "https://www.youtube.com/watch?v=example" --output_di
 For a simpler approach that directly processes a YouTube video and applies the Chain of Density method:
 
 ```
-python youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=VIDEO_ID" --output "output_summary.md"
+youtube-summary --url "https://www.youtube.com/watch?v=VIDEO_ID" --output "output_summary.md"
 ```
 
 Example:
 
 ```
-python youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=D7_ipDqhtwk" --output "cuda_profiling_summary.md"
+youtube-summary --url "https://www.youtube.com/watch?v=D7_ipDqhtwk" --output "cuda_profiling_summary.md"
+```
+
+### Using the Python scripts directly
+
+If you didn't install the package, you can run the Python scripts directly:
+
+```
+python -m scripts.main --video_url "https://www.youtube.com/watch?v=example"
+python -m scripts.batch_process_videos --video_list "video_list.txt"
+python -m scripts.youtube_summary_extractor --url "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
 ### Test Scripts
@@ -120,7 +140,7 @@ The repository includes several test scripts to verify functionality:
 Process the default test CUDA video (a short CUDA crash course):
 
 ```
-python test_cuda_video.py --method gemini
+python -m scripts.test_scripts.test_cuda_video --method gemini
 ```
 
 Options:
@@ -132,7 +152,7 @@ Options:
 Test the LLM client functionality with structured output:
 
 ```
-python test_llm_client.py
+python -m scripts.test_scripts.test_llm_client
 ```
 
 #### Test Direct Gemini API
@@ -140,7 +160,7 @@ python test_llm_client.py
 Test direct YouTube video processing with the Gemini API:
 
 ```
-python test_gemini_video.py
+python -m scripts.test_scripts.test_gemini_video
 ```
 
 
@@ -162,36 +182,50 @@ The system generates two types of output files for each processed video:
 
 ## Components
 
-- `youtube_processor.py`: Handles YouTube video fetching and processing
-- `chain_of_density.py`: Implements the Chain of Density summarization method
-- `information_extractor.py`: Extracts specific types of information
-- `output_formatter.py`: Formats the output into structured reports
-- `gemini_video_processor.py`: Processes videos directly with the Gemini API
-- `main.py`: The main script that ties everything together
-- `youtube_summary_extractor.py`: Standalone script for direct YouTube video processing with Chain of Density
-- `batch_process_videos.py`: Script for processing multiple YouTube videos in batch
-- `parallel_processor.py`: Handles parallel processing of multiple videos
-- `prompts.py`: Contains all prompts used throughout the system
-- `config.py`: Centralized configuration system
-- `logger.py`: Enhanced logging functionality
-- `models.py`: Pydantic models for structured output
-- `llm_client.py`: Centralized LLM client for interacting with the Gemini API
-- `test_cuda_video.py`: Test script for processing the default CUDA video
-- `test_llm_client.py`: Test script for the LLM client
-- `test_gemini_video.py`: Test script for direct Gemini API video processing
-- `config/test_videos.json`: Configuration file with test video URLs
+### Package Structure
+
+- `gpu_info/`: Main package
+  - `core/`: Core functionality
+    - `youtube_processor.py`: Handles YouTube video fetching and processing
+    - `gemini_video_processor.py`: Processes videos directly with the Gemini API
+    - `llm_client.py`: Centralized client for interacting with the Gemini API
+  - `analysis/`: Analysis modules
+    - `chain_of_density.py`: Implements the Chain of Density method for refining summaries
+    - `information_extractor.py`: Extracts specific types of information from video content
+  - `output/`: Output formatting and saving
+    - `output_formatter.py`: Formats extracted information into structured Markdown reports
+  - `models/`: Data models
+    - `models.py`: Pydantic models for structured data
+  - `utils/`: Utility modules
+    - `config.py`: Configuration management
+    - `logger.py`: Logging utilities
+    - `prompts.py`: Centralized prompts for the system
+  - `parallel/`: Parallel processing utilities
+    - `parallel_processor.py`: Processes multiple videos concurrently
+  - `config/`: Configuration files
+    - `test_videos.json`: Test video URLs
+
+### Scripts
+
+- `scripts/`: Command-line scripts
+  - `main.py`: Main script for processing videos
+  - `batch_process_videos.py`: Script for processing multiple videos
+  - `youtube_summary_extractor.py`: Standalone script for YouTube video processing
+  - `test_scripts/`: Test scripts
+    - `test_cuda_video.py`: Test script for processing the default CUDA video
+    - `test_llm_client.py`: Test script for the LLM client
+    - `test_gemini_video.py`: Test script for direct Gemini API video processing
 
 ## Prompt Engineering
 
 The system uses carefully crafted prompts to extract high-quality technical information:
 
-### Content Relevance Check
-Before processing a video, the system first determines if the content is actually about CUDA/Triton kernel programming:
-- Analyzes video content to determine primary topic
-- Assigns a relevance score (0-5) based on CUDA/Triton kernel programming content
-- Provides explanation of actual content for non-relevant videos
-- Automatically skips full processing for non-relevant videos
-- Creates minimal reports for non-relevant videos explaining their actual content
+### Content Analysis
+The system analyzes the content of each video to extract relevant information:
+- Analyzes video content to determine primary technical topics
+- Extracts detailed technical information about CUDA/Triton kernel programming
+- Identifies key concepts, code examples, and best practices
+- Organizes information into structured categories for easy reference
 
 ### Basic Video Summary
 Initial prompt focuses on extracting technical concepts related to CUDA/Triton kernels and GPU architecture, while filtering out non-relevant content.
@@ -221,8 +255,12 @@ Specialized prompts for extracting:
 - Technical pitfalls with root causes and specific solutions
 - Performance optimization techniques with measurable impacts
 
-### Content Filtering
-The system intelligently identifies videos that don't contain relevant CUDA/Triton kernel information and provides clear explanations of what the video actually covers instead. This prevents irrelevant content from being included in the knowledge base.
+### Structured Output
+The system uses Pydantic models to ensure structured, consistent output:
+- Validates extracted information against predefined schemas
+- Ensures all required fields are present and correctly formatted
+- Provides type hints and documentation for better code quality
+- Makes it easy to extend the system with new information types
 
 
 
@@ -285,7 +323,7 @@ python batch_process_videos.py \
 You can also modify the configuration programmatically:
 
 ```python
-from config import Config
+from gpu_info.utils.config import Config
 
 # Get configuration values
 model_id = Config.get("GEMINI_MODEL_ID")
