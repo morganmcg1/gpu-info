@@ -15,6 +15,7 @@ from chain_of_density import ChainOfDensity
 from information_extractor import InformationExtractor
 from output_formatter import OutputFormatter
 from gemini_video_processor import GeminiVideoProcessor
+from llm_client import get_llm_client
 
 from dotenv import load_dotenv
 
@@ -52,6 +53,7 @@ def process_video(api_key: str, video_url: str, output_dir: str) -> Dict[str, st
     
     # Initialize components
     youtube_processor = YouTubeProcessor(cache_dir=os.path.join(output_dir, "cache"))
+    llm_client = get_llm_client(api_key=api_key)
     chain_of_density = ChainOfDensity(api_key=api_key)
     information_extractor = InformationExtractor(api_key=api_key)
     output_formatter = OutputFormatter(output_dir=output_dir)
@@ -67,57 +69,11 @@ def process_video(api_key: str, video_url: str, output_dir: str) -> Dict[str, st
             logger.warning(f"Using fallback video information for {video_url}")
             fallback_info = True
         
-        # Check content relevance first
-        try:
-            relevance_data = gemini_processor.check_content_relevance(video_url)
-            
-            # If the content is not relevant, return early with the relevance data
-            if not relevance_data.get("is_relevant", False) or relevance_data.get("relevance_score", 0) < 3:
-                logger.info(f"Video content not relevant to CUDA/Triton kernel programming: {video_url}")
-                
-                # Format and save a minimal report about non-relevant content
-                non_relevant_info = {
-                    "video_url": video_url,
-                    "is_relevant": False,
-                    "primary_topic": relevance_data.get("primary_topic", "Unknown topic"),
-                    "explanation": relevance_data.get("explanation", "No explanation provided")
-                }
-                
-                output_paths = output_formatter.format_non_relevant(video_info, non_relevant_info)
-                
-                logger.info(f"Skipped processing for non-relevant video: {video_info['title']}")
-                return output_paths
-                
-            logger.info(f"Video content is relevant to CUDA/Triton kernel programming: {video_url}")
-        except Exception as e:
-            logger.warning(f"Error checking content relevance: {e}. Proceeding with video processing anyway.")
-            # If relevance check fails, continue with normal processing
+        # Process all videos regardless of content
         
         # Process the video directly with Gemini
         try:
-            # Pass relevance data if available
-            if 'relevance_data' in locals():
-                detailed_content = gemini_processor.extract_detailed_content(video_url, relevance_data=relevance_data)
-            else:
-                detailed_content = gemini_processor.extract_detailed_content(video_url)
-                
-            # Check if the detailed content indicates the video is not relevant
-            if detailed_content.get("is_relevant") is False:
-                logger.info(f"Video content determined not relevant during detailed extraction: {video_url}")
-                
-                # Format and save a minimal report about non-relevant content
-                non_relevant_info = {
-                    "video_url": video_url,
-                    "is_relevant": False,
-                    "primary_topic": detailed_content.get("relevance_data", {}).get("primary_topic", "Unknown topic"),
-                    "explanation": detailed_content.get("relevance_data", {}).get("explanation", "No explanation provided")
-                }
-                
-                output_paths = output_formatter.format_non_relevant(video_info, non_relevant_info)
-                
-                logger.info(f"Skipped processing for non-relevant video: {video_info['title']}")
-                return output_paths
-                
+            detailed_content = gemini_processor.extract_detailed_content(video_url)
             content = detailed_content["detailed_content"]
         except Exception as e:
             logger.error(f"Error extracting content with Gemini: {str(e)}")

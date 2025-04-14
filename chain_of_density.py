@@ -10,7 +10,9 @@ import logging
 import json
 import re
 from typing import Dict, List, Optional, Any
-from google import genai
+
+from llm_client import get_llm_client
+from models import InitialSummary, EntityList, DenseSummary, SummaryEvaluation
 from prompts import (
     INITIAL_SUMMARY_PROMPT,
     ENTITY_IDENTIFICATION_PROMPT,
@@ -35,7 +37,7 @@ class ChainOfDensity:
             model_id: Gemini model ID to use
         """
         self.model_id = model_id
-        self.client = genai.Client(api_key=api_key)
+        self.llm_client = get_llm_client(api_key=api_key, model_name=model_id)
         logger.info(f"Initialized ChainOfDensity with model: {model_id}")
     
     def generate_initial_summary(self, content: str) -> str:
@@ -53,12 +55,18 @@ class ChainOfDensity:
         prompt = INITIAL_SUMMARY_PROMPT.format(content=content)
         
         try:
-            response = self.client.models.generate_content(
-                model=self.model_id,
-                contents=prompt
-            )
+            # Try to use structured output
+            try:
+                initial_summary_model = self.llm_client.generate_structured_content(
+                    prompt=prompt,
+                    response_model=InitialSummary
+                )
+                initial_summary = initial_summary_model.summary
+            except Exception as e:
+                logger.warning(f"Error generating structured initial summary: {str(e)}. Falling back to unstructured output.")
+                # Fall back to unstructured output
+                initial_summary = self.llm_client.generate_content(prompt=prompt)
             
-            initial_summary = response.text
             logger.info(f"Generated initial summary of {len(initial_summary.split())} words")
             return initial_summary
         except Exception as e:
@@ -84,13 +92,20 @@ class ChainOfDensity:
         )
         
         try:
-            response = self.client.models.generate_content(
-                model=self.model_id,
-                contents=prompt
-            )
+            # Try to use structured output
+            try:
+                entity_list = self.llm_client.generate_structured_content(
+                    prompt=prompt,
+                    response_model=EntityList
+                )
+                entities = entity_list.entities
+            except Exception as e:
+                logger.warning(f"Error generating structured entity list: {str(e)}. Falling back to unstructured output.")
+                # Fall back to unstructured output
+                response = self.llm_client.generate_content(prompt=prompt)
+                # Parse the response to get the list of entities
+                entities = [line.strip() for line in response.strip().split('\n') if line.strip()]
             
-            # Parse the response to get the list of entities
-            entities = [line.strip() for line in response.text.strip().split('\n') if line.strip()]
             logger.info(f"Identified {len(entities)} missing entities")
             return entities
         except Exception as e:
@@ -121,12 +136,18 @@ class ChainOfDensity:
         )
         
         try:
-            response = self.client.models.generate_content(
-                model=self.model_id,
-                contents=prompt
-            )
+            # Try to use structured output
+            try:
+                dense_summary = self.llm_client.generate_structured_content(
+                    prompt=prompt,
+                    response_model=DenseSummary
+                )
+                new_summary = dense_summary.summary
+            except Exception as e:
+                logger.warning(f"Error generating structured dense summary: {str(e)}. Falling back to unstructured output.")
+                # Fall back to unstructured output
+                new_summary = self.llm_client.generate_content(prompt=prompt)
             
-            new_summary = response.text
             logger.info(f"Generated new summary of {len(new_summary.split())} words")
             return new_summary
         except Exception as e:
@@ -158,15 +179,32 @@ class ChainOfDensity:
         prompt = "".join(prompt_parts)
         
         try:
-            response = self.client.models.generate_content(
-                model=self.model_id,
-                contents=prompt
-            )
-            
-            return {
-                "word_count": len(summary.split()),
-                "quality_assessment": response.text
-            }
+            # Try to use structured output
+            try:
+                evaluation = self.llm_client.generate_structured_content(
+                    prompt=prompt,
+                    response_model=SummaryEvaluation
+                )
+                
+                return {
+                    "word_count": len(summary.split()),
+                    "entity_coverage_score": evaluation.entity_coverage_score,
+                    "accuracy_score": evaluation.accuracy_score,
+                    "conciseness_score": evaluation.conciseness_score,
+                    "overall_quality_score": evaluation.overall_quality_score,
+                    "missing_critical_entities": evaluation.missing_critical_entities,
+                    "irrelevant_or_vague_parts": evaluation.irrelevant_or_vague_parts,
+                    "improvement_suggestions": evaluation.improvement_suggestions
+                }
+            except Exception as e:
+                logger.warning(f"Error generating structured evaluation: {str(e)}. Falling back to unstructured output.")
+                # Fall back to unstructured output
+                quality_assessment = self.llm_client.generate_content(prompt=prompt)
+                
+                return {
+                    "word_count": len(summary.split()),
+                    "quality_assessment": quality_assessment
+                }
         except Exception as e:
             logger.error(f"Error evaluating summary quality: {str(e)}")
             return {"word_count": len(summary.split()), "error": str(e)}

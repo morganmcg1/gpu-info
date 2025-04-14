@@ -69,56 +69,9 @@ def process_video(video_url: str, api_key: str, model_id: str, output_dir: str) 
         logger.info(f"Processing video: {video_url}")
         start_time = time.time()
         
-        # Check content relevance first
+        # Process all videos regardless of content
         max_retries = Config.get("MAX_RETRIES", 3)
         timeout = Config.get("TIMEOUT", 300)
-        
-        try:
-            relevance_data = processor.check_content_relevance(
-                video_url=video_url,
-                max_retries=max_retries
-            )
-            
-            # If the content is not relevant, create a minimal report and return early
-            if not relevance_data.get("is_relevant", False) or relevance_data.get("relevance_score", 0) < 3:
-                logger.info(f"Video content not relevant to CUDA/Triton kernel programming: {video_url}")
-                
-                # Format and save a minimal report about non-relevant content
-                non_relevant_info = {
-                    "video_url": video_url,
-                    "is_relevant": False,
-                    "primary_topic": relevance_data.get("primary_topic", "Unknown topic"),
-                    "explanation": relevance_data.get("explanation", "No explanation provided")
-                }
-                
-                # Create minimal video info if we don't have it
-                if 'video_info' not in locals():
-                    video_info = {
-                        "video_id": video_id,
-                        "video_url": video_url,
-                        "title": video_title,
-                        "channel": "Unknown",
-                        "publish_date": "Unknown"
-                    }
-                
-                output_paths = formatter.format_non_relevant(video_info, non_relevant_info)
-                
-                end_time = time.time()
-                processing_time = end_time - start_time
-                
-                logger.info(f"Skipped processing for non-relevant video: {video_title}")
-                return {
-                    "video_id": video_id,
-                    "status": "non_relevant",
-                    "output_file": output_paths.get("markdown_path", ""),
-                    "processing_time": processing_time,
-                    "relevance_data": relevance_data
-                }
-                
-            logger.info(f"Video content is relevant to CUDA/Triton kernel programming: {video_url}")
-        except Exception as e:
-            logger.warning(f"Error checking content relevance: {e}. Proceeding with video processing anyway.")
-            # If relevance check fails, continue with normal processing
         
         # Get basic summary with retry logic
         summary_result = processor.process_video(
@@ -127,73 +80,14 @@ def process_video(video_url: str, api_key: str, model_id: str, output_dir: str) 
             timeout=timeout
         )
         
-        # Check if the summary result indicates the video is not relevant
-        if summary_result.get("is_relevant") is False:
-            logger.info(f"Video content determined not relevant during summary extraction: {video_url}")
-            
-            # Format and save a minimal report about non-relevant content
-            non_relevant_info = {
-                "video_url": video_url,
-                "is_relevant": False,
-                "primary_topic": summary_result.get("relevance_data", {}).get("primary_topic", "Unknown topic"),
-                "explanation": summary_result.get("relevance_data", {}).get("explanation", "No explanation provided")
-            }
-            
-            output_paths = formatter.format_non_relevant(video_info, non_relevant_info)
-            
-            end_time = time.time()
-            processing_time = end_time - start_time
-            
-            logger.info(f"Skipped processing for non-relevant video: {video_title}")
-            return {
-                "video_id": video_id,
-                "status": "non_relevant",
-                "output_file": output_paths.get("markdown_path", ""),
-                "processing_time": processing_time,
-                "relevance_data": summary_result.get("relevance_data", {})
-            }
+        # Process all videos regardless of content
         
         # Get detailed content with retry logic
-        # Pass relevance data if available
-        if 'relevance_data' in locals():
-            detailed_result = processor.extract_detailed_content(
-                video_url=video_url,
-                max_retries=max_retries,
-                timeout=timeout,
-                relevance_data=relevance_data
-            )
-        else:
-            detailed_result = processor.extract_detailed_content(
-                video_url=video_url,
-                max_retries=max_retries,
-                timeout=timeout
-            )
-            
-        # Check if the detailed content indicates the video is not relevant
-        if detailed_result.get("is_relevant") is False:
-            logger.info(f"Video content determined not relevant during detailed extraction: {video_url}")
-            
-            # Format and save a minimal report about non-relevant content
-            non_relevant_info = {
-                "video_url": video_url,
-                "is_relevant": False,
-                "primary_topic": detailed_result.get("relevance_data", {}).get("primary_topic", "Unknown topic"),
-                "explanation": detailed_result.get("relevance_data", {}).get("explanation", "No explanation provided")
-            }
-            
-            output_paths = formatter.format_non_relevant(video_info, non_relevant_info)
-            
-            end_time = time.time()
-            processing_time = end_time - start_time
-            
-            logger.info(f"Skipped processing for non-relevant video: {video_title}")
-            return {
-                "video_id": video_id,
-                "status": "non_relevant",
-                "output_file": output_paths.get("markdown_path", ""),
-                "processing_time": processing_time,
-                "relevance_data": detailed_result.get("relevance_data", {})
-            }
+        detailed_result = processor.extract_detailed_content(
+            video_url=video_url,
+            max_retries=max_retries,
+            timeout=timeout
+        )
         
         # Combine results
         result = {
