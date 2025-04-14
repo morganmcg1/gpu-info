@@ -38,7 +38,7 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 
 ## Usage
 
-### Process a single video
+### Process a single video (Main Script)
 
 ```
 python main.py --video_url "https://www.youtube.com/watch?v=example"
@@ -56,6 +56,20 @@ Where `video_list.txt` contains one YouTube URL per line.
 
 ```
 python main.py --video_url "https://www.youtube.com/watch?v=example" --output_dir "./my_output"
+```
+
+### Direct YouTube Summary Extractor
+
+For a simpler approach that directly processes a YouTube video and applies the Chain of Density method:
+
+```
+python youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=VIDEO_ID" --output "output_summary.md"
+```
+
+Example:
+
+```
+python youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=D7_ipDqhtwk" --output "cuda_profiling_summary.md"
 ```
 
 ## Output
@@ -81,6 +95,8 @@ The system generates two types of output files for each processed video:
 - `output_formatter.py`: Formats the output into structured reports
 - `gemini_video_processor.py`: Processes videos directly with the Gemini API
 - `main.py`: The main script that ties everything together
+- `youtube_summary_extractor.py`: Standalone script for direct YouTube video processing with Chain of Density
+- `final_youtube_test.py`: Test script for the Gemini API with YouTube videos
 
 ## Example Summaries
 
