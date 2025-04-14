@@ -48,6 +48,24 @@ class YouTubeProcessor:
             logger.error("Invalid YouTube URL provided")
             raise ValueError("Invalid YouTube URL provided")
             
+        # Extract video ID from URL to help with error recovery
+        try:
+            # Basic extraction, assumes standard YouTube URL format
+            if "youtu.be" in video_url:
+                video_id = video_url.split("/")[-1].split("?")[0]
+            elif "youtube.com/watch" in video_url:
+                from urllib.parse import urlparse, parse_qs
+                parsed_url = urlparse(video_url)
+                video_id = parse_qs(parsed_url.query).get('v', [''])[0]
+            else:
+                video_id = None
+                
+            if not video_id:
+                logger.warning(f"Could not extract video ID from URL: {video_url}")
+        except Exception as e:
+            logger.warning(f"Error extracting video ID: {str(e)}")
+            video_id = None
+            
         # Retry mechanism for network issues
         max_retries = 3
         retry_delay = 2  # seconds
@@ -55,13 +73,39 @@ class YouTubeProcessor:
         for attempt in range(max_retries):
             try:
                 yt = YouTube(video_url)
+                
+                # Sometimes the first connection may succeed but getting attributes fails
+                # Try to access attributes with additional error handling
+                try:
+                    title = yt.title
+                    author = yt.author
+                    description = yt.description or "No description available"
+                except Exception as attr_err:
+                    logger.warning(f"Error getting video attributes: {str(attr_err)}")
+                    # Fallback to basic info if we couldn't get full details
+                    if video_id:
+                        logger.info(f"Using partial information for video ID: {video_id}")
+                        return {
+                            "title": f"YouTube Video {video_id}",
+                            "author": "Unknown",
+                            "length": 0,
+                            "views": 0,
+                            "publish_date": None,
+                            "description": "Could not retrieve full video details",
+                            "thumbnail_url": f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
+                            "video_id": video_id
+                        }
+                    else:
+                        # We have no fallback information, re-raise the error
+                        raise
+                
                 video_info = {
                     "title": yt.title,
                     "author": yt.author,
                     "length": yt.length,
                     "views": yt.views,
                     "publish_date": yt.publish_date,
-                    "description": yt.description,
+                    "description": yt.description or "No description available",
                     "thumbnail_url": yt.thumbnail_url,
                     "video_id": yt.video_id
                 }
@@ -75,10 +119,42 @@ class YouTubeProcessor:
                     retry_delay *= 2  # Exponential backoff
                 else:
                     logger.error("Max retries reached. Could not connect to YouTube.")
+                    # If we have the video_id, return partial information
+                    if video_id:
+                        logger.info(f"Using partial information for video ID: {video_id}")
+                        return {
+                            "title": f"YouTube Video {video_id}",
+                            "author": "Unknown",
+                            "length": 0,
+                            "views": 0,
+                            "publish_date": None,
+                            "description": "Could not retrieve video details due to connection error",
+                            "thumbnail_url": f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
+                            "video_id": video_id
+                        }
                     raise ConnectionError(f"Failed to connect to YouTube after {max_retries} attempts: {str(e)}")
             except Exception as e:
                 logger.error(f"Error retrieving video info: {str(e)}")
-                raise
+                # If we have the video_id and this is the last attempt, return partial information
+                if video_id and attempt == max_retries - 1:
+                    logger.info(f"Using partial information for video ID: {video_id}")
+                    return {
+                        "title": f"YouTube Video {video_id}",
+                        "author": "Unknown",
+                        "length": 0,
+                        "views": 0,
+                        "publish_date": None,
+                        "description": f"Could not retrieve video details: {str(e)}",
+                        "thumbnail_url": f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg",
+                        "video_id": video_id
+                    }
+                
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    raise
     
     def get_transcript(self, video_url: str) -> Optional[str]:
         """

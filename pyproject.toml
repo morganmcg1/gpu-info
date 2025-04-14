@@ -8,6 +8,8 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "pytube>=15.0.0",
     "colorama>=0.4.6", # For colored terminal output on Windows
+    "markdown",
+    "python-dotenv"
 ]
 
 [project.scripts]

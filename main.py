@@ -16,6 +16,15 @@ from information_extractor import InformationExtractor
 from output_formatter import OutputFormatter
 from gemini_video_processor import GeminiVideoProcessor
 
+from dotenv import load_dotenv
+
+# Determine the absolute path to the directory containing main.py
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Construct the path to the .env file
+dotenv_path = os.path.join(script_dir, '.env')
+# Load the .env file using the explicit path
+load_dotenv(dotenv_path=dotenv_path)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -52,11 +61,30 @@ def process_video(api_key: str, video_url: str, output_dir: str) -> Dict[str, st
         # Get video information
         video_info, _ = youtube_processor.process_video(video_url)
         
+        # Check if we received partial information (a fallback)
+        fallback_info = False
+        if "Could not retrieve" in video_info.get("description", ""):
+            logger.warning(f"Using fallback video information for {video_url}")
+            fallback_info = True
+        
         # Process the video directly with Gemini
-        detailed_content = gemini_processor.extract_detailed_content(video_url)
+        try:
+            detailed_content = gemini_processor.extract_detailed_content(video_url)
+            content = detailed_content["detailed_content"]
+        except Exception as e:
+            logger.error(f"Error extracting content with Gemini: {str(e)}")
+            if fallback_info:
+                # If we already have fallback info and Gemini fails, we can't proceed
+                logger.error(f"Both video info extraction and Gemini processing failed for {video_url}")
+                return {"error": f"Failed to process video: {str(e)}"}
+            else:
+                # We have good video info but Gemini failed, return partial result
+                return {
+                    "video_info": video_info,
+                    "error": f"Gemini processing failed: {str(e)}"
+                }
         
         # Apply Chain of Density to refine the summary
-        content = detailed_content["detailed_content"]
         summaries = chain_of_density.apply_chain_of_density(content, iterations=3)
         final_summary = summaries[-1]
         
@@ -73,23 +101,19 @@ def process_video(api_key: str, video_url: str, output_dir: str) -> Dict[str, st
         logger.error(f"Error processing video {video_url}: {str(e)}")
         raise
 
-def process_video_list(api_key: str, video_list_path: str, output_dir: str) -> List[Dict[str, str]]:
+def process_video_list(api_key: str, video_urls: List[str], output_dir: str) -> List[Dict[str, str]]:
     """
     Process a list of YouTube videos.
     
     Args:
         api_key: Google API key for Gemini
-        video_list_path: Path to a file containing a list of video URLs
+        video_urls: List of YouTube video URLs
         output_dir: Directory to save output
         
     Returns:
         List of dictionaries with paths to output files
     """
-    logger.info(f"Processing videos from list: {video_list_path}")
-    
-    # Read the video list
-    with open(video_list_path, 'r') as f:
-        video_urls = [line.strip() for line in f if line.strip()]
+    logger.info(f"Processing {len(video_urls)} videos")
     
     results = []
     for video_url in video_urls:
@@ -101,12 +125,35 @@ def process_video_list(api_key: str, video_list_path: str, output_dir: str) -> L
     
     return results
 
+def read_video_urls_from_file(file_path: str) -> List[str]:
+    """
+    Read YouTube video URLs from a file.
+    
+    Args:
+        file_path: Path to a file containing a list of video URLs
+        
+    Returns:
+        List of YouTube video URLs
+    """
+    logger.info(f"Reading video URLs from: {file_path}")
+    
+    try:
+        with open(file_path, 'r') as f:
+            video_urls = [line.strip() for line in f if line.strip()]
+        
+        logger.info(f"Found {len(video_urls)} video URLs in {file_path}")
+        return video_urls
+    except Exception as e:
+        logger.error(f"Error reading file {file_path}: {str(e)}")
+        return []
+
 def main():
     """Main function to run the script."""
     parser = argparse.ArgumentParser(description="Process YouTube videos about CUDA and Triton kernels.")
     parser.add_argument("--api_key", help="Google API key for Gemini")
     parser.add_argument("--video_url", help="URL of a YouTube video to process")
     parser.add_argument("--video_list", help="Path to a file containing a list of video URLs")
+    parser.add_argument("--link_file", default="youtube_links.txt", help="Path to a file containing YouTube links (default: youtube_links.txt)")
     parser.add_argument("--output_dir", default="./output", help="Directory to save output")
     
     args = parser.parse_args()
@@ -122,13 +169,27 @@ def main():
     
     # Process videos
     if args.video_url:
+        # Process a single video
         result = process_video(api_key, args.video_url, args.output_dir)
         logger.info(f"Output saved to: {result}")
     elif args.video_list:
-        results = process_video_list(api_key, args.video_list, args.output_dir)
-        logger.info(f"Processed {len(results)} videos")
+        # Process videos from a specified list file
+        video_urls = read_video_urls_from_file(args.video_list)
+        if video_urls:
+            results = process_video_list(api_key, video_urls, args.output_dir)
+            logger.info(f"Processed {len(results)} videos")
+        else:
+            logger.error(f"No valid video URLs found in {args.video_list}")
+    elif os.path.exists(args.link_file):
+        # Process videos from the default link file
+        video_urls = read_video_urls_from_file(args.link_file)
+        if video_urls:
+            results = process_video_list(api_key, video_urls, args.output_dir)
+            logger.info(f"Processed {len(results)} videos from {args.link_file}")
+        else:
+            logger.error(f"No valid video URLs found in {args.link_file}")
     else:
-        logger.error("No video URL or list provided. Use --video_url or --video_list.")
+        logger.error("No video source provided. Use --video_url, --video_list, or create a youtube_links.txt file.")
 
 if __name__ == "__main__":
     main()
