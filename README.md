@@ -78,6 +78,16 @@ Example:
 python youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=D7_ipDqhtwk" --output "cuda_profiling_summary.md"
 ```
 
+### Web Viewer for Summaries
+
+To view the generated summaries in a web browser:
+
+```
+python web_viewer.py --host 0.0.0.0 --port 12000 --summaries_dir "summaries"
+```
+
+Then open your browser and navigate to `http://localhost:12000` to view the summaries.
+
 ## Output
 
 The system generates two types of output files for each processed video:
@@ -103,6 +113,7 @@ The system generates two types of output files for each processed video:
 - `main.py`: The main script that ties everything together
 - `youtube_summary_extractor.py`: Standalone script for direct YouTube video processing with Chain of Density
 - `batch_process_videos.py`: Script for processing multiple YouTube videos in batch
+- `web_viewer.py`: Web interface for viewing generated summaries
 - `final_youtube_test.py`: Test script for the Gemini API with YouTube videos
 
 ## Example Summaries
