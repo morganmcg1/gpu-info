@@ -15,7 +15,7 @@ from prompts import (
     INITIAL_SUMMARY_PROMPT,
     ENTITY_IDENTIFICATION_PROMPT,
     SUMMARY_REWRITE_PROMPT,
-    ENTITY_DENSITY_EVALUATION_PROMPT,
+    ENTITY_DENSITY_EVALUATION_PROMPT,  # Keep for backward compatibility
     SUMMARY_QUALITY_EVALUATION_PROMPT
 )
 
@@ -133,19 +133,29 @@ class ChainOfDensity:
             logger.error(f"Error rewriting summary: {str(e)}")
             return current_summary
     
-    def evaluate_entity_density(self, summary: str) -> Dict[str, Any]:
+    def evaluate_summary_quality(self, summary: str, content: Optional[str] = None) -> Dict[str, Any]:
         """
-        Evaluate the entity density of a summary.
+        Evaluate the technical density and specificity of the summary.
         
         Args:
             summary: The summary to evaluate
+            content: (Optional) Original content for context if needed for evaluation
             
         Returns:
-            Dictionary with evaluation metrics
+            Dictionary with qualitative evaluation
         """
-        logger.info("Evaluating entity density")
+        logger.info("Evaluating summary quality")
         
-        prompt = ENTITY_DENSITY_EVALUATION_PROMPT.format(summary=summary)
+        # Construct prompt, including content if provided
+        prompt_parts = [
+            "Evaluate the technical density and specificity of the following summary regarding writing, running, profiling, or understanding CUDA/Triton kernels and GPU concepts.\n",
+            "Does it contain actionable, concrete technical information (specific function names, tool names, code patterns, architectural details, performance concepts)?\n",
+            "Identify 1-2 areas where the summary could be *more specific* or add *more technical detail* based on common knowledge about this topic or the provided original content (if available).\n\n"
+        ]
+        if content:
+            prompt_parts.extend(["Original Content Context:\n---\n", content, "\n---\n\n"])
+        prompt_parts.extend(["Summary to Evaluate:\n---\n", summary, "\n---\n\n", "Evaluation:"])
+        prompt = "".join(prompt_parts)
         
         try:
             response = self.client.models.generate_content(
@@ -153,15 +163,12 @@ class ChainOfDensity:
                 contents=prompt
             )
             
-            # In a real implementation, we would parse the JSON response
-            # For simplicity, we'll just return a basic evaluation
-            word_count = len(summary.split())
             return {
-                "word_count": word_count,
-                "raw_evaluation": response.text
+                "word_count": len(summary.split()),
+                "quality_assessment": response.text
             }
         except Exception as e:
-            logger.error(f"Error evaluating entity density: {str(e)}")
+            logger.error(f"Error evaluating summary quality: {str(e)}")
             return {"word_count": len(summary.split()), "error": str(e)}
     
     def apply_chain_of_density(self, content: str, iterations: int = 3) -> List[str]:
@@ -177,54 +184,88 @@ class ChainOfDensity:
         """
         logger.info(f"Applying Chain of Density with {iterations} iterations")
         
+        if not content:
+            logger.error("Content cannot be empty.")
+            return []
+            
         summaries = []
         
-        # Generate initial summary
-        current_summary = self.generate_initial_summary(content)
-        summaries.append(current_summary)
-        
-        # Refine the summary through iterations
-        for i in range(iterations):
-            logger.info(f"Starting iteration {i+1}/{iterations}")
-            
-            # Identify missing entities
-            missing_entities = self.identify_missing_entities(content, current_summary)
-            
-            # Rewrite the summary
-            current_summary = self.rewrite_summary(content, current_summary, missing_entities)
+        try:
+            # Generate initial summary
+            current_summary = self.generate_initial_summary(content)
+            if not current_summary:  # Handle potential empty initial summary
+                logger.error("Initial summary generation failed.")
+                return []
             summaries.append(current_summary)
             
-            # Evaluate the new summary
-            evaluation = self.evaluate_entity_density(current_summary)
-            logger.info(f"Iteration {i+1} summary: {evaluation['word_count']} words")
-        
+            # Refine the summary through iterations
+            for i in range(iterations):
+                iteration_num = i + 1
+                logger.info(f"--- Starting Iteration {iteration_num}/{iterations} ---")
+                
+                # Identify missing entities
+                missing_entities = self.identify_missing_entities(content, current_summary)
+                if not missing_entities:
+                    logger.info(f"No missing entities identified in iteration {iteration_num}. Stopping refinement.")
+                    break  # Stop if no more entities are found
+                
+                # Rewrite the summary
+                current_summary = self.rewrite_summary(content, current_summary, missing_entities)
+                summaries.append(current_summary)
+                
+                # Log summary word count
+                logger.info(f"Iteration {iteration_num} summary word count: {len(current_summary.split())}")
+                
+                # Optional: Evaluate quality at each step (can be slow/costly)
+                # evaluation = self.evaluate_summary_quality(current_summary, content)
+                # logger.info(f"Iteration {iteration_num} evaluation: {evaluation}")
+                
+        except Exception as e:
+            logger.error(f"Chain of Density process failed during execution: {str(e)}")
+            # Return whatever summaries were generated before the error
+            return summaries
+            
+        logger.info("Chain of Density process completed.")
         return summaries
     
     def judge_entity_extraction(self, content: str, summary: str) -> Dict[str, Any]:
         """
-        Use Gemini 2.5 Pro as a judge to evaluate entity extraction quality.
+        Use the LLM as an expert judge for final evaluation against the original content.
         
         Args:
             content: The original content
-            summary: The summary to evaluate
+            summary: The final summary to evaluate
             
         Returns:
             Dictionary with judgment results
         """
-        logger.info("Judging entity extraction quality")
+        logger.info("Judging final entity extraction quality")
         
         prompt = SUMMARY_QUALITY_EVALUATION_PROMPT.format(
             content=content,
             summary=summary
         )
         
+        # Specify JSON output if using a model version that reliably supports it
+        generation_config = {
+            "response_mime_type": "application/json"
+        }
+        
         try:
             response = self.client.models.generate_content(
                 model=self.model_id,
-                contents=prompt
+                contents=prompt,
+                generation_config=generation_config
             )
             
-            return {"judgment": response.text}
+            # Attempt to parse the JSON response
+            try:
+                judgment_text = response.text
+                judgment_json = json.loads(judgment_text)
+                return judgment_json
+            except json.JSONDecodeError:
+                logger.error(f"Failed to parse JSON judgment: {response.text}")
+                return {"judgment_text": response.text, "parsing_error": True}  # Return raw text if JSON fails
         except Exception as e:
             logger.error(f"Error judging entity extraction: {str(e)}")
             return {"error": str(e)}
