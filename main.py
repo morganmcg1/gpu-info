@@ -71,7 +71,7 @@ def process_video(api_key: str, video_url: str, output_dir: str) -> Dict[str, st
         # Process the video directly with Gemini
         try:
             detailed_content = gemini_processor.extract_detailed_content(video_url)
-            content = detailed_content["detailed_content"]
+            content = detailed_content.detailed_content
         except Exception as e:
             logger.error(f"Error extracting content with Gemini: {str(e)}")
             if fallback_info:
