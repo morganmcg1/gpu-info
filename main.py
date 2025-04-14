@@ -10,21 +10,18 @@ import argparse
 import logging
 from typing import List, Dict, Any
 import json
-from youtube_processor import YouTubeProcessor
-from chain_of_density import ChainOfDensity
-from information_extractor import InformationExtractor
-from output_formatter import OutputFormatter
-from gemini_video_processor import GeminiVideoProcessor
-from llm_client import get_llm_client
+
+from gpu_info.core.youtube_processor import YouTubeProcessor
+from gpu_info.analysis.chain_of_density import ChainOfDensity
+from gpu_info.analysis.information_extractor import InformationExtractor
+from gpu_info.output.output_formatter import OutputFormatter
+from gpu_info.core.gemini_video_processor import GeminiVideoProcessor
+from gpu_info.core.llm_client import get_llm_client
 
 from dotenv import load_dotenv
 
-# Determine the absolute path to the directory containing main.py
-script_dir = os.path.dirname(os.path.abspath(__file__))
-# Construct the path to the .env file
-dotenv_path = os.path.join(script_dir, '.env')
-# Load the .env file using the explicit path
-load_dotenv(dotenv_path=dotenv_path)
+# Load the .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(

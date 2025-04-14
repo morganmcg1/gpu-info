@@ -8,7 +8,7 @@ import json
 import logging
 import argparse
 import google.generativeai as genai
-from models import VideoAnalysis
+from gpu_info.models.models import VideoAnalysis
 
 # Configure logging
 logging.basicConfig(
