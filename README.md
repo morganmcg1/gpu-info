@@ -50,6 +50,12 @@ python main.py --video_url "https://www.youtube.com/watch?v=example"
 python main.py --video_list "video_list.txt"
 ```
 
+Or use the dedicated batch processing script:
+
+```
+python batch_process_videos.py --video_list "video_list.txt" --output_dir "summaries" --max_workers 1
+```
+
 Where `video_list.txt` contains one YouTube URL per line.
 
 ### Specify an output directory
@@ -96,6 +102,7 @@ The system generates two types of output files for each processed video:
 - `gemini_video_processor.py`: Processes videos directly with the Gemini API
 - `main.py`: The main script that ties everything together
 - `youtube_summary_extractor.py`: Standalone script for direct YouTube video processing with Chain of Density
+- `batch_process_videos.py`: Script for processing multiple YouTube videos in batch
 - `final_youtube_test.py`: Test script for the Gemini API with YouTube videos
 
 ## Example Summaries
