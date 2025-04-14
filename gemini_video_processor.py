@@ -54,13 +54,16 @@ class GeminiVideoProcessor:
             
         logger.info(f"Checking content relevance for video: {video_url}")
         
-        # Use the models property instead of get_model
-        model = self.client.models[self.model_id]
+        # Use the generate_content method directly from the client
+        # The model_id will be passed as a parameter to generate_content
         
         for attempt in range(max_retries):
             try:
                 prompt = CONTENT_RELEVANCE_CHECK_PROMPT.format(content=video_url)
-                response = model.generate_content(prompt)
+                response = self.client.generate_content(
+                    model=self.model_id,
+                    contents=prompt
+                )
                 
                 # Try to parse the JSON response
                 try:
@@ -174,7 +177,7 @@ class GeminiVideoProcessor:
                 
                 # Call the Gemini API with the video URL
                 # Note: timeout is handled at the client level, not in the API call
-                response = self.client.models.generate_content(
+                response = self.client.generate_content(
                     model=self.model_id,
                     contents=[
                         {
@@ -299,7 +302,7 @@ class GeminiVideoProcessor:
                 
                 # Call the Gemini API with the video URL
                 # Note: timeout is handled at the client level, not in the API call
-                response = self.client.models.generate_content(
+                response = self.client.generate_content(
                     model=self.model_id,
                     contents=[
                         {
