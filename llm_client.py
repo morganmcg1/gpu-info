@@ -33,7 +33,8 @@ class LLMClient:
             raise ValueError("No API key provided and GOOGLE_API_KEY environment variable not set")
         
         self.model_name = model_name
-        self.client = genai.Client(api_key=self.api_key)
+        genai.configure(api_key=self.api_key)
+        self.model = genai.GenerativeModel(model_name=self.model_name)
         logger.info(f"Initialized LLMClient with model: {model_name}")
     
     def generate_content(self, prompt: str, max_retries: int = 3) -> str:
@@ -51,10 +52,7 @@ class LLMClient:
         
         for attempt in range(max_retries):
             try:
-                response = self.client.models.generate_content(
-                    model=self.model_name,
-                    contents=prompt
-                )
+                response = self.model.generate_content(prompt)
                 return response.text
             except Exception as e:
                 logger.warning(f"Attempt {attempt+1}/{max_retries} failed: {str(e)}")
@@ -79,17 +77,18 @@ class LLMClient:
         """
         logger.debug(f"Generating structured content with prompt: {prompt[:100]}...")
         
+        # Add instructions to return JSON in the prompt
+        structured_prompt = f"{prompt}\n\nPlease provide your response as a valid JSON object that matches the following structure: {response_model.schema_json()}"
+        
         for attempt in range(max_retries):
             try:
-                response = self.client.models.generate_content(
-                    model=self.model_name,
-                    contents=prompt,
-                    config={
-                        'response_mime_type': 'application/json',
-                        'response_schema': response_model,
-                    }
-                )
-                return response.parsed
+                response = self.model.generate_content(structured_prompt)
+                
+                # Extract JSON from the response
+                json_str = self._extract_json_from_text(response.text)
+                
+                # Parse the JSON into the Pydantic model
+                return response_model.parse_raw(json_str)
             except Exception as e:
                 logger.warning(f"Attempt {attempt+1}/{max_retries} failed: {str(e)}")
                 if attempt == max_retries - 1:
@@ -113,17 +112,22 @@ class LLMClient:
         """
         logger.debug(f"Generating list content with prompt: {prompt[:100]}...")
         
+        # Add instructions to return JSON array in the prompt
+        structured_prompt = f"{prompt}\n\nPlease provide your response as a valid JSON array where each item matches the following structure: {response_model.schema_json()}"
+        
         for attempt in range(max_retries):
             try:
-                response = self.client.models.generate_content(
-                    model=self.model_name,
-                    contents=prompt,
-                    config={
-                        'response_mime_type': 'application/json',
-                        'response_schema': List[response_model],
-                    }
-                )
-                return response.parsed
+                response = self.model.generate_content(structured_prompt)
+                
+                # Extract JSON from the response
+                json_str = self._extract_json_from_text(response.text)
+                
+                # Parse the JSON into a list of Pydantic models
+                json_data = json.loads(json_str)
+                if not isinstance(json_data, list):
+                    json_data = [json_data]
+                
+                return [response_model.parse_obj(item) for item in json_data]
             except Exception as e:
                 logger.warning(f"Attempt {attempt+1}/{max_retries} failed: {str(e)}")
                 if attempt == max_retries - 1:
@@ -132,6 +136,65 @@ class LLMClient:
         
         # This should never be reached due to the raise in the exception handler
         raise RuntimeError("Failed to generate list content")
+
+
+    def _extract_json_from_text(self, text: str) -> str:
+        """
+        Extract JSON from text that might contain markdown code blocks or other text.
+        
+        Args:
+            text: The text to extract JSON from.
+            
+        Returns:
+            The extracted JSON as a string.
+        """
+        # Try to extract JSON from markdown code blocks
+        import re
+        json_block_pattern = r"```(?:json)?\s*([\s\S]*?)\s*```"
+        matches = re.findall(json_block_pattern, text)
+        
+        if matches:
+            # Use the first match that parses as valid JSON
+            for match in matches:
+                try:
+                    # Validate that it's proper JSON by parsing it
+                    json.loads(match)
+                    return match
+                except json.JSONDecodeError:
+                    continue
+        
+        # If no valid JSON found in code blocks, try to find JSON-like content
+        # Look for content between curly braces
+        brace_pattern = r"(\{[\s\S]*\})"
+        brace_matches = re.findall(brace_pattern, text)
+        
+        if brace_matches:
+            # Use the first match that parses as valid JSON
+            for match in brace_matches:
+                try:
+                    # Validate that it's proper JSON by parsing it
+                    json.loads(match)
+                    return match
+                except json.JSONDecodeError:
+                    continue
+                    
+        # If no valid JSON found in curly braces, look for arrays
+        array_pattern = r"(\[[\s\S]*\])"
+        array_matches = re.findall(array_pattern, text)
+        
+        if array_matches:
+            # Use the first match that parses as valid JSON
+            for match in array_matches:
+                try:
+                    # Validate that it's proper JSON by parsing it
+                    json.loads(match)
+                    return match
+                except json.JSONDecodeError:
+                    continue
+        
+        # If we still haven't found valid JSON, return the original text
+        # This will likely fail when parsing, but at least we tried
+        return text
 
 
 # Create a singleton instance of the LLM client
