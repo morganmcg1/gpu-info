@@ -65,6 +65,7 @@ class GeminiVideoProcessor:
                 prompt = BASIC_VIDEO_SUMMARY_PROMPT
                 
                 # Call the Gemini API with the video URL
+                # Note: timeout is handled at the client level, not in the API call
                 response = self.client.models.generate_content(
                     model=self.model_id,
                     contents=[
@@ -74,8 +75,7 @@ class GeminiVideoProcessor:
                                 {"file_data": {"file_uri": video_url}}
                             ]
                         }
-                    ],
-                    timeout=timeout
+                    ]
                 )
                 
                 if not response or not hasattr(response, 'text'):
@@ -148,6 +148,7 @@ class GeminiVideoProcessor:
                 prompt = DETAILED_VIDEO_ANALYSIS_PROMPT
                 
                 # Call the Gemini API with the video URL
+                # Note: timeout is handled at the client level, not in the API call
                 response = self.client.models.generate_content(
                     model=self.model_id,
                     contents=[
@@ -157,8 +158,7 @@ class GeminiVideoProcessor:
                                 {"file_data": {"file_uri": video_url}}
                             ]
                         }
-                    ],
-                    timeout=timeout
+                    ]
                 )
                 
                 if not response or not hasattr(response, 'text'):

@@ -216,3 +216,45 @@ class OutputFormatter:
             'markdown_path': markdown_path,
             'json_path': json_path
         }
+        
+    def format_output(self, result: Dict[str, Any]) -> str:
+        """
+        Format and save output from Gemini API results.
+        
+        Args:
+            result: Dictionary with video URL, ID, summary, and detailed content
+            
+        Returns:
+            Path to the saved markdown file
+        """
+        logger.info(f"Formatting output for video ID: {result.get('video_id', 'unknown')}")
+        
+        video_id = result.get('video_id', 'unknown')
+        video_url = result.get('video_url', '')
+        summary = result.get('summary', '')
+        detailed_content = result.get('detailed_content', '')
+        
+        # Create video info dictionary
+        video_info = {
+            'video_id': video_id,
+            'title': f"YouTube Video {video_id}",
+            'author': 'Unknown',
+            'publish_date': 'Unknown',
+            'url': video_url
+        }
+        
+        # Save the detailed content as the main summary
+        file_path = os.path.join(self.output_dir, f"{video_id}_summary.md")
+        
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(f"# Summary for Video {video_id}\n\n")
+                f.write(f"## Video URL\n{video_url}\n\n")
+                f.write(f"## Basic Summary\n{summary}\n\n")
+                f.write(f"## Detailed Content\n{detailed_content}\n\n")
+            
+            logger.info(f"Saved formatted output to {file_path}")
+            return file_path
+        except Exception as e:
+            logger.error(f"Error saving formatted output: {str(e)}")
+            raise
