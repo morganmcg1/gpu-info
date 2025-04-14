@@ -110,7 +110,7 @@ The system generates two types of output files for each processed video:
 - `youtube_summary_extractor.py`: Standalone script for direct YouTube video processing with Chain of Density
 - `batch_process_videos.py`: Script for processing multiple YouTube videos in batch
 
-- `final_youtube_test.py`: Test script for the Gemini API with YouTube videos
+
 
 ## Example Summaries
 
