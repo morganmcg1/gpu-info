@@ -21,7 +21,7 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
 - Process multiple videos in parallel for improved efficiency
 - Centralized configuration system for easy customization
 - Robust logging with colored console output
-- Intelligent content filtering (identifies non-relevant videos)
+- Intelligent content filtering (automatically identifies and skips non-CUDA/Triton videos)
 
 ## Installation
 
@@ -85,6 +85,12 @@ Where:
 - `--force_reprocess` forces reprocessing of already processed videos
 - `--api_key` can be used to provide a Google API key directly
 
+The system will automatically:
+1. Check if each video is relevant to CUDA/Triton kernel programming
+2. Skip full processing for non-relevant videos
+3. Create minimal reports for non-relevant videos explaining their actual content
+4. Process relevant videos with the full pipeline
+
 ### Specify an output directory
 
 ```
@@ -140,6 +146,14 @@ The system generates two types of output files for each processed video:
 ## Prompt Engineering
 
 The system uses carefully crafted prompts to extract high-quality technical information:
+
+### Content Relevance Check
+Before processing a video, the system first determines if the content is actually about CUDA/Triton kernel programming:
+- Analyzes video content to determine primary topic
+- Assigns a relevance score (0-5) based on CUDA/Triton kernel programming content
+- Provides explanation of actual content for non-relevant videos
+- Automatically skips full processing for non-relevant videos
+- Creates minimal reports for non-relevant videos explaining their actual content
 
 ### Basic Video Summary
 Initial prompt focuses on extracting technical concepts related to CUDA/Triton kernels and GPU architecture, while filtering out non-relevant content.
