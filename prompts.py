@@ -4,6 +4,35 @@ These prompts are used to interact with the Gemini API for various tasks related
 extracting information from YouTube videos about CUDA and Triton kernels.
 """
 
+# Content Relevance Check Prompt
+CONTENT_RELEVANCE_CHECK_PROMPT = """
+Analyze this video content and determine if it contains specific technical information about CUDA or Triton kernel programming, GPU architecture directly relevant to kernel writing, or performance optimization techniques for GPU kernels.
+
+Content to analyze:
+---
+{content}
+---
+
+Evaluate the content based on these criteria:
+1. Does it contain specific CUDA or Triton code examples, function names, or API calls?
+2. Does it explain GPU architecture concepts that directly impact kernel writing (e.g., memory hierarchy, thread organization, warp execution)?
+3. Does it discuss specific performance optimization techniques for GPU kernels?
+4. Does it provide concrete implementation steps, debugging techniques, or profiling methods for GPU kernels?
+
+Respond with a JSON object containing:
+{
+  "is_relevant": true/false,
+  "relevance_score": 0-10 (where 10 is highly relevant),
+  "contains_cuda_content": true/false,
+  "contains_triton_content": true/false,
+  "primary_topic": "brief description of what the video is actually about",
+  "key_technical_concepts": ["list", "of", "specific", "technical", "concepts", "if", "any"],
+  "explanation": "Brief explanation of why this content is or isn't relevant to CUDA/Triton kernel programming"
+}
+
+If the content is not relevant to CUDA/Triton kernel programming, provide a brief explanation of what the video actually covers instead.
+"""
+
 # Chain of Density Prompts
 INITIAL_SUMMARY_PROMPT = """
 Create a concise initial summary (around 150 words) of the following content.
