@@ -4,6 +4,7 @@ Test script for the LLMClient.
 
 import os
 import sys
+import json
 import logging
 from pydantic import BaseModel, Field
 from typing import List, Optional
@@ -21,6 +22,18 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Import the LLMClient
 from llm_client import LLMClient, get_llm_client
 from models import CodeExample, Equation, Gotcha, PerformanceTip, VideoAnalysis
+
+def get_test_video_url():
+    """Get the test video URL from the config file."""
+    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'test_videos.json')
+    try:
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+            return config.get('default_test_video')
+    except Exception as e:
+        logger.error(f"Error loading test video config: {str(e)}")
+        # Fallback to the hardcoded URL
+        return "https://www.youtube.com/watch?v=pPStdjuYzSI"
 
 def test_generate_content():
     """Test the generate_content method."""
@@ -105,14 +118,18 @@ def test_video_analysis_model():
     
     client = LLMClient(api_key=api_key)
     
-    prompt = """
-    Analyze the following video about CUDA programming:
+    # Get the test video URL
+    video_url = get_test_video_url()
+    logger.info(f"Using test video: {video_url}")
     
-    Title: "Introduction to CUDA Programming"
+    prompt = f"""
+    Analyze the following CUDA programming video: {video_url}
     
-    Summary: This video introduces CUDA programming for GPU acceleration. It covers the basics of CUDA kernels, memory management, and optimization techniques.
+    This is a video about CUDA programming for GPU acceleration. Please provide a structured analysis of this video, 
+    including core technical concepts, code examples, equations, implementation techniques, and common pitfalls.
     
-    Please provide a structured analysis of this video, including core technical concepts, code examples, equations, implementation techniques, and common pitfalls.
+    Focus on extracting detailed technical information about CUDA programming, kernel optimization, 
+    memory management, and performance considerations.
     """
     
     logger.info("Testing VideoAnalysis model...")
