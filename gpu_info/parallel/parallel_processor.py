@@ -6,15 +6,19 @@ It uses concurrent.futures to parallelize the processing of videos.
 """
 
 import os
+import sys
 import argparse
 import concurrent.futures
 from typing import List, Dict, Any
 import time
 
-from gemini_video_processor import GeminiVideoProcessor
-from output_formatter import OutputFormatter
-from config import Config
-from logger import get_logger
+# Add the parent directory to the path so we can import the gpu_info package
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+from gpu_info.core.gemini_video_processor import GeminiVideoProcessor
+from gpu_info.output.output_formatter import OutputFormatter
+from gpu_info.utils.config import Config
+from gpu_info.utils.logger import get_logger
 
 # Get logger for this module
 logger = get_logger(__name__)
@@ -49,7 +53,7 @@ def process_video(video_url: str, api_key: str, model_id: str, output_dir: str) 
             }
         
         # Get video information from YouTube
-        from youtube_processor import YouTubeProcessor
+        from gpu_info.core.youtube_processor import YouTubeProcessor
         yt_processor = YouTubeProcessor()
         try:
             video_info = yt_processor.get_video_info(video_url)

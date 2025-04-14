@@ -126,9 +126,9 @@ youtube-summary --url "https://www.youtube.com/watch?v=D7_ipDqhtwk" --output "cu
 If you didn't install the package, you can run the Python scripts directly:
 
 ```
-python -m scripts.main --video_url "https://www.youtube.com/watch?v=example"
-python -m scripts.batch_process_videos --video_list "video_list.txt"
-python -m scripts.youtube_summary_extractor --url "https://www.youtube.com/watch?v=VIDEO_ID"
+python main.py --video_url "https://www.youtube.com/watch?v=example"
+python scripts/batch_process_videos.py --video_list "video_list.txt"
+python scripts/youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
 ### Test Scripts
@@ -140,7 +140,7 @@ The repository includes several test scripts to verify functionality:
 Process the default test CUDA video (a short CUDA crash course):
 
 ```
-python -m scripts.test_scripts.test_cuda_video --method gemini
+python gpu_info/tests/test_cuda_video.py --method gemini
 ```
 
 Options:
@@ -152,7 +152,7 @@ Options:
 Test the LLM client functionality with structured output:
 
 ```
-python -m scripts.test_scripts.test_llm_client
+python gpu_info/tests/test_llm_client.py
 ```
 
 #### Test Direct Gemini API
@@ -160,7 +160,7 @@ python -m scripts.test_scripts.test_llm_client
 Test direct YouTube video processing with the Gemini API:
 
 ```
-python -m scripts.test_scripts.test_gemini_video
+python gpu_info/tests/test_gemini_video.py
 ```
 
 
@@ -268,8 +268,8 @@ The system uses Pydantic models to ensure structured, consistent output:
 
 The repository includes example summaries that demonstrate the level of detail and structure we aim to achieve:
 
-1. [Triton Kernel Basics](summaries/triton_kernel_basics.md)
-2. [CUDA Optimization Techniques](summaries/cuda_optimization_techniques.md)
+1. [Triton Kernel Basics](gpu_info/output/summaries/triton_kernel_basics.md)
+2. [CUDA Optimization Techniques](gpu_info/output/summaries/cuda_optimization_techniques.md)
 
 ## Configuration
 

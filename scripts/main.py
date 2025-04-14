@@ -32,11 +32,15 @@ dotenv_path = os.path.join(script_dir, '.env')
 load_dotenv(dotenv_path=dotenv_path)
 
 # Configure logging
+log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "gpu_info", "logs")
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, "gpu_info.log")
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("gpu_info.log"),
+        logging.FileHandler(log_file),
         logging.StreamHandler()
     ]
 )
@@ -57,7 +61,9 @@ def process_video(api_key: str, video_url: str, output_dir: str) -> Dict[str, st
     logger.info(f"Processing video: {video_url}")
     
     # Initialize components
-    youtube_processor = YouTubeProcessor(cache_dir=os.path.join(output_dir, "cache"))
+    cache_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "gpu_info", "cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    youtube_processor = YouTubeProcessor(cache_dir=cache_dir)
     llm_client = get_llm_client(api_key=api_key)
     chain_of_density = ChainOfDensity(api_key=api_key)
     information_extractor = InformationExtractor(api_key=api_key)
@@ -79,7 +85,7 @@ def process_video(api_key: str, video_url: str, output_dir: str) -> Dict[str, st
         # Process the video directly with Gemini
         try:
             detailed_content = gemini_processor.extract_detailed_content(video_url)
-            content = detailed_content["detailed_content"]
+            content = detailed_content.detailed_content
         except Exception as e:
             logger.error(f"Error extracting content with Gemini: {str(e)}")
             if fallback_info:
@@ -163,7 +169,9 @@ def main():
     parser.add_argument("--video_url", help="URL of a YouTube video to process")
     parser.add_argument("--video_list", help="Path to a file containing a list of video URLs")
     parser.add_argument("--link_file", default="youtube_links.txt", help="Path to a file containing YouTube links (default: youtube_links.txt)")
-    parser.add_argument("--output_dir", default="./output", help="Directory to save output")
+    parser.add_argument("--output_dir", 
+                        default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "gpu_info", "output"), 
+                        help="Directory to save output")
     
     args = parser.parse_args()
     

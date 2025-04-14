@@ -9,8 +9,8 @@ It now uses the parallel_processor module for improved performance and reliabili
 """
 
 import os
-import sys
 import argparse
+import sys
 
 # Add the parent directory to the path so we can import the gpu_info package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -20,7 +20,11 @@ from gpu_info.utils.config import Config
 from gpu_info.utils.logger import get_logger, setup_root_logger
 
 # Set up logging
-setup_root_logger()
+log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "gpu_info", "logs")
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, "batch_process.log")
+
+setup_root_logger(log_file=log_file)
 logger = get_logger(__name__)
 
 def main():

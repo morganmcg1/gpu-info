@@ -7,10 +7,10 @@ method to extract high-quality, detailed information about CUDA and Triton kerne
 """
 
 import os
-import sys
 import time
 import logging
 import argparse
+import sys
 from datetime import datetime
 import google.generativeai as genai
 
@@ -23,9 +23,17 @@ from gpu_info.utils.prompts import (
 )
 
 # Configure logging
+log_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "gpu_info", "logs")
+os.makedirs(log_dir, exist_ok=True)
+log_file = os.path.join(log_dir, "youtube_summary.log")
+
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -152,7 +160,13 @@ def extract_specific_information(refined_summary, api_key):
 def main():
     parser = argparse.ArgumentParser(description='YouTube Summary Extractor with Chain of Density')
     parser.add_argument('--url', type=str, required=True, help='YouTube video URL')
-    parser.add_argument('--output', type=str, default='summary.md', help='Output file path')
+    
+    default_output = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+        "gpu_info", "output", "summary.md"
+    )
+    parser.add_argument('--output', type=str, default=default_output, help='Output file path')
+    
     args = parser.parse_args()
     
     # Get API key from environment variable

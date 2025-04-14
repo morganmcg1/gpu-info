@@ -1,0 +1,19 @@
+{
+  "video_info": {
+    "title": "YouTube Video D7_ipDqhtwk",
+    "author": "Unknown",
+    "length": 0,
+    "views": 0,
+    "publish_date": null,
+    "description": "Could not retrieve full video details",
+    "thumbnail_url": "https://img.youtube.com/vi/D7_ipDqhtwk/maxresdefault.jpg",
+    "video_id": "D7_ipDqhtwk"
+  },
+  "non_relevant_info": {
+    "video_url": "https://www.youtube.com/watch?v=D7_ipDqhtwk",
+    "is_relevant": false,
+    "primary_topic": "High-level overview and explanation of the NVIDIA H100 GPU hardware architecture and its features, focusing on its capabilities for AI acceleration.",
+    "explanation": "The video provides a high-level overview of the NVIDIA H100 GPU hardware and its features relevant to AI performance (like the Transformer Engine, FP8 support, Tensor Cores). It mentions 'CUDA cores' as a component but does not delve into CUDA programming, show any CUDA or Triton code examples, discuss kernel writing APIs (like `__global__`, `threadIdx`, etc.), explain the GPU memory hierarchy or thread organization from a programmer's perspective, or detail specific kernel optimization techniques. The focus is entirely on the hardware's capabilities and specifications, not on how to program kernels for it using CUDA or Triton."
+  },
+  "is_relevant": false
+}

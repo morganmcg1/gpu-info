@@ -1,0 +1,19 @@
+{
+  "video_info": {
+    "title": "YouTube Video 8VvTcj-XKbU",
+    "author": "Unknown",
+    "length": 0,
+    "views": 0,
+    "publish_date": null,
+    "description": "Could not retrieve full video details",
+    "thumbnail_url": "https://img.youtube.com/vi/8VvTcj-XKbU/maxresdefault.jpg",
+    "video_id": "8VvTcj-XKbU"
+  },
+  "non_relevant_info": {
+    "video_url": "https://www.youtube.com/watch?v=8VvTcj-XKbU",
+    "is_relevant": false,
+    "primary_topic": "Building a custom tensor library in Python from scratch, focusing on implementing automatic differentiation (backpropagation).",
+    "explanation": "The video explains the concepts and implementation details of automatic differentiation for building a deep learning library similar to PyTorch, but from scratch using Python and primarily NumPy. It focuses on the mathematical concepts (chain rule), data structures (computational graphs, Tensor objects), and algorithms (topological sort for backpropagation) required for gradient calculation. The entire implementation discussed and shown is CPU-based Python code. There is no mention or demonstration of CUDA, Triton, GPU kernels, GPU architecture (like warps, SMs, memory hierarchy), or specific GPU optimization techniques. Therefore, it is not relevant to the specific query about CUDA/Triton kernel programming or GPU optimization."
+  },
+  "is_relevant": false
+}
