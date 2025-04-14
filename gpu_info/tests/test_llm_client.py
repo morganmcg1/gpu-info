@@ -16,16 +16,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Add the current directory to the path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add the parent directory to the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 # Import the LLMClient
-from llm_client import LLMClient, get_llm_client
-from models import CodeExample, Equation, Gotcha, PerformanceTip, VideoAnalysis
+from gpu_info.core.llm_client import LLMClient, get_llm_client
+from gpu_info.models.models import CodeExample, Equation, Gotcha, PerformanceTip, VideoAnalysis
 
 def get_test_video_url():
     """Get the test video URL from the config file."""
-    config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', 'test_videos.json')
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config', 'test_videos.json')
     try:
         with open(config_path, 'r') as f:
             config = json.load(f)
