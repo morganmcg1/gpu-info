@@ -214,6 +214,13 @@ The system generates two types of output files for each processed video:
     - `parallel_processor.py`: Processes multiple videos concurrently
   - `config/`: Configuration files
     - `test_videos.json`: Test video URLs
+  - `logs/`: Log files
+  - `cache/`: Cached data
+  - `tests/`: Test scripts
+- `examples/`: Example scripts and output files
+  - `process_video_example.py`: Example script for processing a YouTube video
+  - `sample_output.md`: Example output file
+  - `README.md`: Documentation for the examples
 
 ### Scripts
 
@@ -275,12 +282,23 @@ The system uses Pydantic models to ensure structured, consistent output:
 
 
 
-## Example Summaries
+## Examples
 
-The repository includes example summaries that demonstrate the level of detail and structure we aim to achieve:
+The repository includes examples that demonstrate how to use the system and the level of detail and structure we aim to achieve:
 
-1. [Triton Kernel Basics](gpu_info/output/summaries/triton_kernel_basics.md)
-2. [CUDA Optimization Techniques](gpu_info/output/summaries/cuda_optimization_techniques.md)
+### Example Scripts
+
+The `examples` directory contains example scripts demonstrating how to use the GPU Info system:
+
+- [Process Video Example](examples/process_video_example.py): A script demonstrating how to process a YouTube video and extract information about CUDA/Triton kernels.
+
+### Example Output
+
+The `examples` directory also includes sample output files:
+
+- [CUDA Profiling and Optimization](examples/sample_output.md): A sample output file demonstrating the expected output format for a processed video.
+
+For more information about the examples, see the [Examples README](examples/README.md).
 
 ## Configuration
 
