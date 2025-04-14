@@ -6,6 +6,7 @@ It uses the pytube library to download video information and transcripts.
 """
 
 import os
+import time
 from typing import Dict, Optional, Tuple
 from pytube import YouTube
 import logging
@@ -37,24 +38,47 @@ class YouTubeProcessor:
             
         Returns:
             Dictionary containing video information
+            
+        Raises:
+            ValueError: If the video URL is invalid
+            ConnectionError: If there are network issues
+            Exception: For other unexpected errors
         """
-        try:
-            yt = YouTube(video_url)
-            video_info = {
-                "title": yt.title,
-                "author": yt.author,
-                "length": yt.length,
-                "views": yt.views,
-                "publish_date": yt.publish_date,
-                "description": yt.description,
-                "thumbnail_url": yt.thumbnail_url,
-                "video_id": yt.video_id
-            }
-            logger.info(f"Successfully retrieved info for video: {yt.title}")
-            return video_info
-        except Exception as e:
-            logger.error(f"Error retrieving video info: {str(e)}")
-            raise
+        if not video_url or not isinstance(video_url, str):
+            logger.error("Invalid YouTube URL provided")
+            raise ValueError("Invalid YouTube URL provided")
+            
+        # Retry mechanism for network issues
+        max_retries = 3
+        retry_delay = 2  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                yt = YouTube(video_url)
+                video_info = {
+                    "title": yt.title,
+                    "author": yt.author,
+                    "length": yt.length,
+                    "views": yt.views,
+                    "publish_date": yt.publish_date,
+                    "description": yt.description,
+                    "thumbnail_url": yt.thumbnail_url,
+                    "video_id": yt.video_id
+                }
+                logger.info(f"Successfully retrieved info for video: {yt.title}")
+                return video_info
+            except ConnectionError as e:
+                logger.warning(f"Network error on attempt {attempt+1}/{max_retries}: {str(e)}")
+                if attempt < max_retries - 1:
+                    logger.info(f"Retrying in {retry_delay} seconds...")
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # Exponential backoff
+                else:
+                    logger.error("Max retries reached. Could not connect to YouTube.")
+                    raise ConnectionError(f"Failed to connect to YouTube after {max_retries} attempts: {str(e)}")
+            except Exception as e:
+                logger.error(f"Error retrieving video info: {str(e)}")
+                raise
     
     def get_transcript(self, video_url: str) -> Optional[str]:
         """
@@ -65,17 +89,31 @@ class YouTubeProcessor:
             
         Returns:
             String containing the transcript or None if not available
+            
+        Raises:
+            ValueError: If the video URL is invalid
         """
-        video_id = YouTube(video_url).video_id
-        cache_path = os.path.join(self.cache_dir, f"{video_id}_transcript.txt")
-        
-        # Check if transcript is already cached
-        if os.path.exists(cache_path):
-            logger.info(f"Loading transcript from cache for video ID: {video_id}")
-            with open(cache_path, 'r', encoding='utf-8') as f:
-                return f.read()
-        
+        if not video_url or not isinstance(video_url, str):
+            logger.error("Invalid YouTube URL provided")
+            raise ValueError("Invalid YouTube URL provided")
+            
         try:
+            video_id = YouTube(video_url).video_id
+            cache_path = os.path.join(self.cache_dir, f"{video_id}_transcript.txt")
+            
+            # Check if transcript is already cached
+            if os.path.exists(cache_path):
+                logger.info(f"Loading transcript from cache for video ID: {video_id}")
+                try:
+                    with open(cache_path, 'r', encoding='utf-8') as f:
+                        transcript = f.read()
+                    if transcript and len(transcript) > 0:
+                        return transcript
+                    else:
+                        logger.warning(f"Cached transcript for video ID {video_id} is empty, will try to fetch again")
+                except (IOError, UnicodeDecodeError) as e:
+                    logger.warning(f"Error reading cached transcript: {str(e)}. Will try to fetch again.")
+            
             # Note: pytube doesn't directly support transcript extraction
             # This is a placeholder - in a real implementation, we would use
             # a service like YouTube Data API or youtube-transcript-api
@@ -84,6 +122,9 @@ class YouTubeProcessor:
             
             # For now, we'll return None to indicate that the transcript is not available
             # In the main application, we'll use the Gemini API to process the video directly
+            return None
+        except ConnectionError as e:
+            logger.error(f"Network error retrieving transcript: {str(e)}")
             return None
         except Exception as e:
             logger.error(f"Error retrieving transcript: {str(e)}")

@@ -17,6 +17,7 @@ This project aims to create a high-quality knowledge base from YouTube videos ab
   - Common gotchas and warnings
   - Performance optimization techniques
 - Generate well-structured Markdown reports
+- Process multiple videos in parallel for improved efficiency
 
 ## Installation
 
@@ -54,13 +55,16 @@ python main.py --video_url "https://www.youtube.com/watch?v=example"
 python main.py --video_list "video_list.txt"
 ```
 
-Or use the dedicated batch processing script:
+Or use the dedicated batch processing script with parallel processing:
 
 ```
-python batch_process_videos.py --video_list "video_list.txt" --output_dir "summaries" --max_workers 1
+python batch_process_videos.py --video_list "video_list.txt" --output_dir "summaries" --max_workers 3
 ```
 
-Where `video_list.txt` contains one YouTube URL per line.
+Where:
+- `video_list.txt` contains one YouTube URL per line
+- `--max_workers` controls the number of videos processed in parallel (default: 3)
+- `--model_id` can be used to specify a different Gemini model (default: gemini-2.5-pro-preview-03-25)
 
 ### Specify an output directory
 
@@ -109,6 +113,8 @@ The system generates two types of output files for each processed video:
 - `main.py`: The main script that ties everything together
 - `youtube_summary_extractor.py`: Standalone script for direct YouTube video processing with Chain of Density
 - `batch_process_videos.py`: Script for processing multiple YouTube videos in batch
+- `parallel_processor.py`: Handles parallel processing of multiple videos
+- `prompts.py`: Contains all prompts used throughout the system
 
 
 
