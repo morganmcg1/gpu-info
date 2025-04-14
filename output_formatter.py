@@ -222,7 +222,7 @@ class OutputFormatter:
         Format and save output from Gemini API results.
         
         Args:
-            result: Dictionary with video URL, ID, summary, and detailed content
+            result: Dictionary with video URL, ID, title, summary, and detailed content
             
         Returns:
             Path to the saved markdown file
@@ -231,24 +231,25 @@ class OutputFormatter:
         
         video_id = result.get('video_id', 'unknown')
         video_url = result.get('video_url', '')
+        video_title = result.get('video_title', f"YouTube Video {video_id}")
         summary = result.get('summary', '')
         detailed_content = result.get('detailed_content', '')
         
-        # Create video info dictionary
-        video_info = {
-            'video_id': video_id,
-            'title': f"YouTube Video {video_id}",
-            'author': 'Unknown',
-            'publish_date': 'Unknown',
-            'url': video_url
-        }
+        # Create a safe filename from the title
+        import re
+        safe_title = re.sub(r'[^\w\s-]', '', video_title).strip().replace(' ', '_')
+        safe_title = re.sub(r'[-_]+', '_', safe_title)
+        
+        # Limit filename length to avoid issues
+        if len(safe_title) > 100:
+            safe_title = safe_title[:100]
         
         # Save the detailed content as the main summary
-        file_path = os.path.join(self.output_dir, f"{video_id}_summary.md")
+        file_path = os.path.join(self.output_dir, f"{safe_title}_{video_id}.md")
         
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
-                f.write(f"# Summary for Video {video_id}\n\n")
+                f.write(f"# {video_title}\n\n")
                 f.write(f"## Video URL\n{video_url}\n\n")
                 f.write(f"## Basic Summary\n{summary}\n\n")
                 f.write(f"## Detailed Content\n{detailed_content}\n\n")

@@ -36,16 +36,27 @@ def process_video(video_url: str, api_key: str, model_id: str, output_dir: str) 
         # Extract video ID from URL
         video_id = video_url.split("v=")[-1].split("&")[0]
         
-        # Check if output file already exists
-        output_path = os.path.join(output_dir, f"{video_id}_summary.md")
-        if os.path.exists(output_path) and not Config.get("FORCE_REPROCESS", False):
+        # Check if any file with this video ID exists in the output directory
+        import glob
+        existing_files = glob.glob(os.path.join(output_dir, f"*_{video_id}.md"))
+        if existing_files and not Config.get("FORCE_REPROCESS", False):
             logger.info(f"Video {video_id} already processed, skipping (use FORCE_REPROCESS=true to override)")
             return {
                 "video_id": video_id,
                 "status": "skipped",
-                "output_file": output_path,
+                "output_file": existing_files[0],
                 "processing_time": 0
             }
+        
+        # Get video information from YouTube
+        from youtube_processor import YouTubeProcessor
+        yt_processor = YouTubeProcessor()
+        try:
+            video_info = yt_processor.get_video_info(video_url)
+            video_title = video_info.get("title", f"YouTube Video {video_id}")
+        except Exception as e:
+            logger.warning(f"Could not get video title: {str(e)}. Using video ID instead.")
+            video_title = f"YouTube Video {video_id}"
         
         # Initialize processors
         processor = GeminiVideoProcessor(
@@ -78,6 +89,7 @@ def process_video(video_url: str, api_key: str, model_id: str, output_dir: str) 
         result = {
             "video_url": video_url,
             "video_id": video_id,
+            "video_title": video_title,
             "summary": summary_result.get("summary", ""),
             "detailed_content": detailed_result.get("detailed_content", "")
         }
