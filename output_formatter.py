@@ -185,6 +185,57 @@ class OutputFormatter:
             logger.error(f"Error saving JSON data: {str(e)}")
             raise
     
+    def format_non_relevant(self, video_info: Dict[str, Any], non_relevant_info: Dict[str, Any]) -> Dict[str, str]:
+        """
+        Format and save information about a non-relevant video.
+        
+        Args:
+            video_info: Information about the video
+            non_relevant_info: Information about why the video is not relevant
+            
+        Returns:
+            Dictionary with paths to saved files
+        """
+        video_id = video_info.get('video_id', 'unknown')
+        video_title = video_info.get('title', 'Unknown Title')
+        
+        # Format as Markdown
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        
+        md = f"""# {video_title}
+
+## Video Information
+- **URL:** {video_info.get('video_url', 'Unknown')}
+- **Channel:** {video_info.get('channel', 'Unknown')}
+- **Published Date:** {video_info.get('publish_date', 'Unknown')}
+- **Processed Date:** {current_date}
+
+## Content Relevance Analysis
+- **Relevant to CUDA/Triton:** No
+- **Primary Topic:** {non_relevant_info.get('primary_topic', 'Unknown')}
+
+### Explanation
+{non_relevant_info.get('explanation', 'No explanation provided')}
+
+---
+*This video was automatically determined to not contain relevant CUDA or Triton kernel programming content.*
+"""
+        
+        markdown_path = self.save_markdown(video_id, md)
+        
+        # Save raw data as JSON
+        data = {
+            'video_info': video_info,
+            'non_relevant_info': non_relevant_info,
+            'is_relevant': False
+        }
+        json_path = self.save_json(video_id, data)
+        
+        return {
+            'markdown_path': markdown_path,
+            'json_path': json_path
+        }
+    
     def format_and_save(self, video_info: Dict[str, Any], summary: str, 
                         extracted_info: Dict[str, List[Dict[str, str]]]) -> Dict[str, str]:
         """
