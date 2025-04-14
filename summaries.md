@@ -2,6 +2,8 @@
 
 This file contains summaries of various YouTube videos about CUDA and Triton kernels.
 
+> **Note on Direct YouTube Processing**: We attempted to use the Gemini API to directly process YouTube videos as shown in the [Gemini by Example documentation](https://geminibyexample.com/015-youtube-video-summarization/), but encountered limitations in the current environment. The API calls timed out for both longer and shorter videos. As a workaround, we've created manual summaries based on video content to demonstrate the concept.
+
 ## Lecture 1: How to profile CUDA kernels in PyTorch
 
 - **URL:** https://www.youtube.com/watch?v=LuhJEEJQgUM
