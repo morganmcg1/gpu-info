@@ -1,0 +1,8 @@
+# Test YouTube links for CUDA and Triton kernel videos
+# Each line should contain a single YouTube URL
+
+# CUDA Crash Course
+https://www.youtube.com/watch?v=D7_ipDqhtwk
+
+# Triton Tutorial
+https://www.youtube.com/watch?v=JIsgyk0Paic

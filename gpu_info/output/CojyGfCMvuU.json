@@ -1,0 +1,19 @@
+{
+  "video_info": {
+    "title": "YouTube Video CojyGfCMvuU",
+    "author": "Unknown",
+    "length": 0,
+    "views": 0,
+    "publish_date": null,
+    "description": "Could not retrieve full video details",
+    "thumbnail_url": "https://img.youtube.com/vi/CojyGfCMvuU/maxresdefault.jpg",
+    "video_id": "CojyGfCMvuU"
+  },
+  "non_relevant_info": {
+    "video_url": "https://www.youtube.com/watch?v=CojyGfCMvuU",
+    "is_relevant": false,
+    "primary_topic": "NVIDIA GTC 2024 keynote presentation covering new product announcements (e.g., Blackwell GPU), AI advancements, large-scale computing, simulation (Omniverse), robotics, and NVIDIA's strategic direction.",
+    "explanation": "This video is a high-level keynote address by NVIDIA's CEO, Jensen Huang, at the GTC 2024 conference. While it announces new GPU architectures like Blackwell and mentions the CUDA platform's importance in the broader ecosystem, it does not provide specific technical details relevant to CUDA or Triton kernel programming. There are no code examples, API discussions, detailed explanations of GPU architectural features pertinent to kernel optimization (e.g., warp scheduling, memory hierarchy specifics for programmers), specific kernel optimization techniques, or practical implementation/debugging steps. The content focuses on product launches, strategic vision, market trends, and high-level capabilities rather than the low-level details required for kernel development."
+  },
+  "is_relevant": false
+}

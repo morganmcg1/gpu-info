@@ -1,1 +1,372 @@
-# gpu-info
+# GPU Mode Knowledge Base
+
+This repository contains tools for extracting high-quality information from YouTube videos about CUDA and Triton kernels. It uses the Gemini 2.5 Pro model to analyze videos and extract key learnings, code examples, equations, and best practices.
+
+## Overview
+
+This project aims to create a high-quality knowledge base from YouTube videos about CUDA and Triton kernel programming. It uses the Gemini API and the Chain of Density method to extract detailed, high-signal information from educational content.
+
+The project has been reorganized with a tidier repository structure and now uses modern Python packaging with `pyproject.toml`. We recommend using `uv` for package management.
+
+## Features
+
+- Process YouTube videos directly using the Gemini API
+- Apply the Chain of Density method to create high-quality summaries
+- Extract specific types of technical information:
+  - Complete, executable code examples with proper syntax and optimization notes
+  - Mathematical equations and algorithms with precise definitions and implementation relevance
+  - Step-by-step implementation techniques with exact parameter values and hardware considerations
+  - Specific technical pitfalls with root causes and concrete solutions
+  - Performance optimization techniques with measurable impacts and hardware mechanisms
+  - GPU architecture details directly relevant to kernel writing
+- Generate well-structured Markdown reports
+- Process multiple videos in parallel for improved efficiency
+- Centralized configuration system for easy customization
+- Robust logging with colored console output
+- Modern Python packaging with pyproject.toml
+- Organized package structure for better maintainability
+
+## Installation
+
+1. Clone the repository:
+   ```
+   git clone https://github.com/morganmcg1/gpu-info.git
+   cd gpu-info
+   ```
+
+2. Install the package using `uv` (recommended):
+   ```
+   uv venv
+   uv pip install -e .
+   ```
+
+   Or using pip:
+   ```
+   pip install -e .
+   ```
+
+   Or just install the dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. Set up your Google API key:
+   ```
+   export GOOGLE_API_KEY="your_api_key_here"
+   ```
+
+4. (Optional) Configure additional settings via environment variables:
+   ```
+   # Example: Set maximum parallel workers
+   export GPU_INFO_MAX_WORKERS=5
+   
+   # Example: Set output directory
+   export GPU_INFO_OUTPUT_DIR="./my_summaries"
+   
+   # Example: Set logging level
+   export GPU_INFO_LOG_LEVEL="DEBUG"
+   ```
+
+
+
+## Usage
+
+If you installed the package, you can use the provided command-line scripts:
+
+### Process a single video
+
+```
+process-video --video_url "https://www.youtube.com/watch?v=example"
+```
+
+### Process multiple videos from a list
+
+```
+process-video --video_list "video_list.txt"
+```
+
+Or use the dedicated batch processing script with parallel processing:
+
+```
+batch-process --video_list "video_list.txt" --output_dir "summaries" --max_workers 3
+```
+
+Where:
+- `video_list.txt` contains one YouTube URL per line
+- `--max_workers` controls the number of videos processed in parallel (default: 3)
+- `--model_id` can be used to specify a different Gemini model (default: gemini-2.5-pro-preview-03-25)
+- `--log_level` sets the logging level (DEBUG, INFO, WARNING, ERROR)
+- `--force_reprocess` forces reprocessing of already processed videos
+- `--api_key` can be used to provide a Google API key directly
+
+The system will automatically process all videos with the full pipeline.
+
+### Specify an output directory
+
+```
+process-video --video_url "https://www.youtube.com/watch?v=example" --output_dir "./my_output"
+```
+
+### Direct YouTube Summary Extractor
+
+For a simpler approach that directly processes a YouTube video and applies the Chain of Density method:
+
+```
+youtube-summary --url "https://www.youtube.com/watch?v=VIDEO_ID" --output "output_summary.md"
+```
+
+Example:
+
+```
+youtube-summary --url "https://www.youtube.com/watch?v=D7_ipDqhtwk" --output "cuda_profiling_summary.md"
+```
+
+### Using the Python scripts directly
+
+If you didn't install the package, you can run the Python scripts directly:
+
+```
+python main.py --video_url "https://www.youtube.com/watch?v=example"
+python scripts/batch_process_videos.py --video_list "video_list.txt"
+python scripts/youtube_summary_extractor.py --url "https://www.youtube.com/watch?v=VIDEO_ID"
+```
+
+### Test Scripts
+
+The repository includes several test scripts to verify functionality:
+
+#### Test with Default CUDA Video
+
+Process the default test CUDA video (a short CUDA crash course):
+
+```
+python gpu_info/tests/test_cuda_video.py --method gemini
+```
+
+Options:
+- `--method`: Choose between `gemini` (direct Gemini API), `pipeline` (full processing pipeline), or `both` (default)
+- `--output_dir`: Specify the output directory (default: `test_output`)
+
+#### Test LLM Client
+
+Test the LLM client functionality with structured output:
+
+```
+python gpu_info/tests/test_llm_client.py
+```
+
+#### Test Direct Gemini API
+
+Test direct YouTube video processing with the Gemini API:
+
+```
+python gpu_info/tests/test_gemini_video.py
+```
+
+#### Test Code Structure
+
+Verify the code structure and imports:
+
+```
+./test_structure.py
+```
+
+This script checks that all modules can be imported correctly and that the directory structure is as expected.
+
+
+
+## Output
+
+The system generates two types of output files for each processed video:
+
+1. **Markdown Report** (.md): A well-structured report containing:
+   - Video information
+   - Comprehensive summary
+   - Code examples
+   - Key equations
+   - Step-by-step processes
+   - Gotchas and warnings
+   - Performance optimization tips
+
+2. **JSON Data** (.json): Raw data containing all extracted information.
+
+## Components
+
+### Package Structure
+
+- `gpu_info/`: Main package
+  - `core/`: Core functionality
+    - `youtube_processor.py`: Handles YouTube video fetching and processing
+    - `gemini_video_processor.py`: Processes videos directly with the Gemini API
+    - `llm_client.py`: Centralized client for interacting with the Gemini API
+  - `analysis/`: Analysis modules
+    - `chain_of_density.py`: Implements the Chain of Density method for refining summaries
+    - `information_extractor.py`: Extracts specific types of information from video content
+  - `output/`: Output formatting and saving
+    - `output_formatter.py`: Formats extracted information into structured Markdown reports
+  - `models/`: Data models
+    - `models.py`: Pydantic models for structured data
+  - `utils/`: Utility modules
+    - `config.py`: Configuration management
+    - `logger.py`: Logging utilities
+    - `prompts.py`: Centralized prompts for the system
+  - `parallel/`: Parallel processing utilities
+    - `parallel_processor.py`: Processes multiple videos concurrently
+  - `config/`: Configuration files
+    - `test_videos.json`: Test video URLs
+  - `logs/`: Log files
+  - `cache/`: Cached data
+  - `tests/`: Test scripts
+- `examples/`: Example scripts and output files
+  - `process_video_example.py`: Example script for processing a YouTube video
+  - `sample_output.md`: Example output file
+  - `README.md`: Documentation for the examples
+
+### Scripts
+
+- `scripts/`: Command-line scripts
+  - `main.py`: Main script for processing videos
+  - `batch_process_videos.py`: Script for processing multiple videos
+  - `youtube_summary_extractor.py`: Standalone script for YouTube video processing
+- `test_structure.py`: Script to verify code structure and imports
+- `gpu_info/tests/`: Test scripts
+  - `test_cuda_video.py`: Test script for processing the default CUDA video
+  - `test_llm_client.py`: Test script for the LLM client
+  - `test_gemini_video.py`: Test script for direct Gemini API video processing
+
+## Prompt Engineering
+
+The system uses carefully crafted prompts to extract high-quality technical information:
+
+### Content Analysis
+The system analyzes the content of each video to extract relevant information:
+- Analyzes video content to determine primary technical topics
+- Extracts detailed technical information about CUDA/Triton kernel programming
+- Identifies key concepts, code examples, and best practices
+- Organizes information into structured categories for easy reference
+
+### Basic Video Summary
+Initial prompt focuses on extracting technical concepts related to CUDA/Triton kernels and GPU architecture, while filtering out non-relevant content.
+
+### Detailed Analysis
+Secondary prompt extracts specific technical details:
+- Named functions, classes, and methods with exact parameters
+- Complete code snippets with proper syntax and optimization notes
+- Mathematical formulas explaining kernel behavior
+- Implementation techniques with exact parameter values
+- Performance metrics with precise numbers
+- Common pitfalls and their solutions
+- GPU architecture insights relevant to kernel writing
+
+### Chain of Density
+Iterative refinement process that:
+- Identifies missing technical entities
+- Rewrites summaries to include these entities
+- Evaluates technical density and specificity
+- Produces increasingly detailed and precise summaries
+
+### Information Extraction
+Specialized prompts for extracting:
+- Code examples with exact syntax and optimization techniques
+- Mathematical equations with variable definitions and implementation relevance
+- Implementation steps with specific parameter values and hardware considerations
+- Technical pitfalls with root causes and specific solutions
+- Performance optimization techniques with measurable impacts
+
+### Structured Output
+The system uses Pydantic models to ensure structured, consistent output:
+- Validates extracted information against predefined schemas
+- Ensures all required fields are present and correctly formatted
+- Provides type hints and documentation for better code quality
+- Makes it easy to extend the system with new information types
+
+
+
+## Examples
+
+The repository includes examples that demonstrate how to use the system and the level of detail and structure we aim to achieve:
+
+### Example Scripts
+
+The `examples` directory contains example scripts demonstrating how to use the GPU Info system:
+
+- [Process Video Example](examples/process_video_example.py): A script demonstrating how to process a YouTube video and extract information about CUDA/Triton kernels.
+
+### Example Output
+
+The `examples` directory also includes sample output files:
+
+- [CUDA Profiling and Optimization](examples/sample_output.md): A sample output file demonstrating the expected output format for a processed video.
+
+For more information about the examples, see the [Examples README](examples/README.md).
+
+## Configuration
+
+The system uses a centralized configuration system that can be customized in several ways:
+
+### Environment Variables
+
+You can configure the system using environment variables with the prefix `GPU_INFO_`:
+
+```bash
+# API Settings
+export GPU_INFO_GEMINI_MODEL_ID="gemini-2.5-pro-preview-03-25"
+export GPU_INFO_GEMINI_API_KEY="your_api_key_here"  # Alternative to GOOGLE_API_KEY
+
+# Processing Settings
+export GPU_INFO_MAX_WORKERS=3
+export GPU_INFO_TIMEOUT=300
+export GPU_INFO_MAX_RETRIES=3
+export GPU_INFO_RETRY_DELAY=2
+export GPU_INFO_FORCE_REPROCESS=false
+
+# Output Settings
+export GPU_INFO_OUTPUT_DIR="./summaries"
+export GPU_INFO_CACHE_DIR="./cache"
+
+# Logging Settings
+export GPU_INFO_LOG_LEVEL="INFO"  # DEBUG, INFO, WARNING, ERROR
+export GPU_INFO_LOG_FORMAT="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+export GPU_INFO_LOG_FILE="gpu_info.log"
+
+# Chain of Density Settings
+export GPU_INFO_COD_ITERATIONS=3
+```
+
+### Command Line Arguments
+
+Most scripts accept command line arguments that override the configuration:
+
+```bash
+python batch_process_videos.py \
+  --video_list "video_list.txt" \
+  --output_dir "summaries" \
+  --max_workers 3 \
+  --model_id "gemini-2.5-pro-preview-03-25" \
+  --log_level "INFO" \
+  --force_reprocess
+```
+
+### Programmatic Configuration
+
+You can also modify the configuration programmatically:
+
+```python
+from gpu_info.utils.config import Config
+
+# Get configuration values
+model_id = Config.get("GEMINI_MODEL_ID")
+max_workers = Config.get("MAX_WORKERS")
+
+# Set configuration values
+Config.set("MAX_WORKERS", 5)
+Config.set("LOG_LEVEL", "DEBUG")
+```
+
+## Limitations
+
+There are some limitations with directly processing YouTube videos using the Gemini API. See [README_LIMITATIONS.md](README_LIMITATIONS.md) for details and workarounds.
+
+## License
+
+[MIT License](LICENSE)

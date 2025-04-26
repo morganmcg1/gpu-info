@@ -1,0 +1,11 @@
+{
+    "test_videos": [
+        {
+            "url": "https://www.youtube.com/watch?v=pPStdjuYzSI",
+            "title": "CUDA Crash Course: Intro to CUDA",
+            "description": "Short CUDA tutorial video for testing purposes",
+            "is_cuda_content": true
+        }
+    ],
+    "default_test_video": "https://www.youtube.com/watch?v=pPStdjuYzSI"
+}

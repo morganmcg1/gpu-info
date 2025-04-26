@@ -172,3 +172,15 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Project specific
+gpu_info/logs/*
+!gpu_info/logs/.gitignore
+!gpu_info/logs/README.md
+
+gpu_info/cache/*
+!gpu_info/cache/.gitignore
+!gpu_info/cache/README.md
+
+# Temporary files
+.DS_Store
